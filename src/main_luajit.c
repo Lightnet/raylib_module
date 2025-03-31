@@ -13,7 +13,7 @@
 #include <raylib.h>
 #include <stdio.h>
 #include <string.h>
-// #include "mimalloc.h"
+#include "mimalloc.h"
 
 #include "raylib_lua.h"
 #include "enet_lua.h"
@@ -22,17 +22,17 @@
 #include "flecs_lua.h"
 
 // Custom allocator using mimalloc
-// static void *mimalloc_lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
-//   (void)ud; // Unused user data
-//   if (nsize == 0) {
-//       mi_free(ptr);
-//       return NULL;
-//   } else if (ptr == NULL) {
-//       return mi_malloc(nsize);
-//   } else {
-//       return mi_realloc(ptr, nsize);
-//   }
-// }
+static void *mimalloc_lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+  (void)ud; // Unused user data
+  if (nsize == 0) {
+      mi_free(ptr);
+      return NULL;
+  } else if (ptr == NULL) {
+      return mi_malloc(nsize);
+  } else {
+      return mi_realloc(ptr, nsize);
+  }
+}
 
 // Custom error handler
 static int lua_error_handler(lua_State *L) {
@@ -85,6 +85,15 @@ static int lua_error_handler(lua_State *L) {
 }
 
 int main(int argc, char *argv[]) {
+
+    // testing if the lib are loaded from cmake.
+    // void *test = mi_malloc(16);
+    // if (test) {
+    //     printf("mimalloc allocated successfully\n");
+    //     mi_free(test);
+    // } else {
+    //     printf("mimalloc allocation failed\n");
+    // }
     // printf("LUA_TNONE %d\n", LUA_TNONE);
     // printf("LUA_TNIL %d\n", LUA_TNIL);
     // printf("LUA_TBOOLEAN %d\n", LUA_TBOOLEAN);
@@ -109,12 +118,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize Lua with mimalloc allocator
-    lua_State *L = luaL_newstate();
-    // lua_State *L = lua_newstate(mimalloc_lua_alloc, NULL);
-    // if (!L) {
-    //     fprintf(stderr, "Failed to create LuaJIT state\n");
-    //     return 1;
-    // }
+    // lua_State *L = luaL_newstate();
+    lua_State *L = lua_newstate(mimalloc_lua_alloc, NULL);
+    if (!L) {
+        fprintf(stderr, "Failed to create LuaJIT state\n");
+        return 1;
+    }
 
     luaL_openlibs(L);
 
