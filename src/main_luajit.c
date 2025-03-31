@@ -13,7 +13,7 @@
 #include <raylib.h>
 #include <stdio.h>
 #include <string.h>
-#include "mimalloc.h"
+// #include "mimalloc.h"
 
 #include "raylib_lua.h"
 #include "enet_lua.h"
@@ -22,17 +22,17 @@
 #include "flecs_lua.h"
 
 // Custom allocator using mimalloc
-static void *mimalloc_lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
-  (void)ud; // Unused user data
-  if (nsize == 0) {
-      mi_free(ptr);
-      return NULL;
-  } else if (ptr == NULL) {
-      return mi_malloc(nsize);
-  } else {
-      return mi_realloc(ptr, nsize);
-  }
-}
+// static void *mimalloc_lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+//   (void)ud; // Unused user data
+//   if (nsize == 0) {
+//       mi_free(ptr);
+//       return NULL;
+//   } else if (ptr == NULL) {
+//       return mi_malloc(nsize);
+//   } else {
+//       return mi_realloc(ptr, nsize);
+//   }
+// }
 
 // Custom error handler
 static int lua_error_handler(lua_State *L) {
@@ -95,8 +95,9 @@ int main(int argc, char *argv[]) {
     // printf("LUA_TUSERDATA %d\n", LUA_TUSERDATA);
     // printf("LUA_TTHREAD %d\n", LUA_TTHREAD);
     // printf("LUA_TTABLE %d\n", LUA_TTABLE);
+    printf("init main_luajit.c");
 
-    const char *script_path = "demo.lua";
+    const char *script_path = "script.lua";
 
     if (argc > 1) {
         script_path = argv[1];
@@ -108,12 +109,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize Lua with mimalloc allocator
-    //lua_State *L = luaL_newstate();
-    lua_State *L = lua_newstate(mimalloc_lua_alloc, NULL);
-    if (!L) {
-        fprintf(stderr, "Failed to create LuaJIT state\n");
-        return 1;
-    }
+    lua_State *L = luaL_newstate();
+    // lua_State *L = lua_newstate(mimalloc_lua_alloc, NULL);
+    // if (!L) {
+    //     fprintf(stderr, "Failed to create LuaJIT state\n");
+    //     return 1;
+    // }
 
     luaL_openlibs(L);
 

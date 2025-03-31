@@ -170,8 +170,9 @@ add_executable(${PROJECT_NAME}
     # src/main.c
     # src/main_flecs.c
     # src/main_raylib.c
+    src/main_luajit.c
     # src/raylib_nuklear_test.c
-    src/raylib_flecs_nuklear.c
+    # src/raylib_flecs_nuklear.c
     ${LUA_MODULE_SRC_FILES}
 )
 
@@ -242,9 +243,9 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/demo.lua"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/demo.lua"
-    COMMENT "Copying demo.lua to output directory"
+        "${CMAKE_SOURCE_DIR}/script.lua"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/script.lua"
+    COMMENT "Copying script.lua to output directory"
 )
 
 # # TEST 01
@@ -270,52 +271,52 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 # )
 # target_link_libraries(test02 PRIVATE ws2_32 winmm)
 
-set(BUILD_ALL_EXAMPLES OFF CACHE BOOL "Build all examples")
+# set(BUILD_ALL_EXAMPLES OFF CACHE BOOL "Build all examples")
 
-#set(BUILD_ALL_EXAMPLES OFF)
-set(BUILD_ALL_EXAMPLES ON)
+# #set(BUILD_ALL_EXAMPLES OFF)
+# set(BUILD_ALL_EXAMPLES ON)
 
-set(examples
-    #src/test.c
-    #src/test_flecs01.
-    # src/raylib_flecs02.c
-    # src/flecs_init.c
-    # src/flecs_init02.c
-    # src/flecs_init03.c
-    #src/test_flecs02.c
-    #src/raylib_flecs.c
-)
-message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
+# set(examples
+#     #src/test.c
+#     #src/test_flecs01.
+#     # src/raylib_flecs02.c
+#     # src/flecs_init.c
+#     # src/flecs_init02.c
+#     # src/flecs_init03.c
+#     #src/test_flecs02.c
+#     #src/raylib_flecs.c
+# )
+# message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
-foreach(example_source ${examples})
-    #message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
-    get_filename_component(example_name ${example_source} NAME_WE)
-    string(REPLACE ".c" "" example_name ${example_name})
+# foreach(example_source ${examples})
+#     #message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
+#     get_filename_component(example_name ${example_source} NAME_WE)
+#     string(REPLACE ".c" "" example_name ${example_name})
     
-    # Create individual option, default ON
-    option(BUILD_${example_name} "Build ${example_name} example" ON)
+#     # Create individual option, default ON
+#     option(BUILD_${example_name} "Build ${example_name} example" ON)
     
-    # Build only if BUILD_ALL_EXAMPLES is ON and individual option is ON
-    # If BUILD_ALL_EXAMPLES is OFF, nothing builds regardless of individual options
-    if(BUILD_ALL_EXAMPLES)
-        if(BUILD_${example_name})
-            add_executable(${example_name} ${example_source})
+#     # Build only if BUILD_ALL_EXAMPLES is ON and individual option is ON
+#     # If BUILD_ALL_EXAMPLES is OFF, nothing builds regardless of individual options
+#     if(BUILD_ALL_EXAMPLES)
+#         if(BUILD_${example_name})
+#             add_executable(${example_name} ${example_source})
             
-            target_link_libraries(${example_name} PRIVATE
-                raylib
-                flecs
-                luajit
-                mimalloc
-            )
+#             target_link_libraries(${example_name} PRIVATE
+#                 raylib
+#                 flecs
+#                 luajit
+#                 mimalloc
+#             )
             
-            if(WIN32)
-                target_link_libraries(${example_name} PRIVATE
-                    ws2_32
-                    winmm
-                )
-            endif()
+#             if(WIN32)
+#                 target_link_libraries(${example_name} PRIVATE
+#                     ws2_32
+#                     winmm
+#                 )
+#             endif()
             
-            message(STATUS "Added example: ${example_name}")
-        endif()
-    endif()
-endforeach()
+#             message(STATUS "Added example: ${example_name}")
+#         endif()
+#     endif()
+# endforeach()

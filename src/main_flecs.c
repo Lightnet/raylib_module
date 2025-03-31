@@ -7,8 +7,6 @@
 #include "rlgl.h"    // For rlPushMatrix, rlTranslatef, etc.
 #include "flecs.h"
 
-
-
 // Transform3D component
 typedef struct {
   Vector3 position;
@@ -37,8 +35,7 @@ static void TraceImpl(const char* message) {
 }
 
 // Custom logging function
-void CustomLog(int msgType, const char *text, va_list args)
-{
+void CustomLog(int msgType, const char *text, va_list args){
     char timeStr[64] = { 0 };
     time_t now = time(NULL);
     struct tm *tm_info = localtime(&now);
@@ -319,14 +316,3 @@ int main() {
 
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-

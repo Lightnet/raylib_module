@@ -224,9 +224,6 @@ int main(){
   ecs_add_pair(world, EndGUIPhase, EcsDependsOn, RenderGUIPhase);
   ecs_add_pair(world, EndRenderPhase, EcsDependsOn, EndGUIPhase);
 
-
-
-
   // Initialize systems
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
@@ -366,9 +363,6 @@ int main(){
     .events = { Clicked },
     .callback = OnClick
   });
-
-
-
 
   printf("Starting main loop\n");
   while (!WindowShouldClose()) {

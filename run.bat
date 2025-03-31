@@ -3,8 +3,8 @@ setlocal
 set APPNAME=raylib_module
 set APPPATH=build\Debug\%APPNAME%.exe
 set EXECUTABLE=%APPNAME%.exe
-set DEMO_SRC=demo.lua
-set DEMO_DEST=build\Debug\demo.lua
+set DEMO_SRC=script.lua
+set DEMO_DEST=build\Debug\script.lua
 
 echo %DEMO_SRC%
 echo %DEMO_DEST%
@@ -13,8 +13,9 @@ if not exist %APPPATH% (
     echo Executable not found! Please build the project first.
     exit /b 1
 )
-@REM echo copying %DEMO_SRC%
-@REM copy %DEMO_SRC% %DEMO_DEST%
+
+echo copying %DEMO_SRC%
+copy %DEMO_SRC% %DEMO_DEST%
 
 @REM @REM Check if demo.lua exists in the output directory, copy it if not
 @REM if not exist demo.lua (
