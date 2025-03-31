@@ -204,9 +204,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     raylib
     flecs
     luajit
-    # mimalloc
-    # mimalloc-debug
-    ${mimalloc_BINARY_DIR}/Debug/mimalloc-debug.lib
+    mimalloc-static # working
+    # mimalloc #not working
+    # mimalloc-debug #not working
+    # ${mimalloc_BINARY_DIR}/Debug/mimalloc-debug.lib #working
 )
 
 if(WIN32)
