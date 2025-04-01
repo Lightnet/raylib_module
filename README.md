@@ -48,6 +48,11 @@ Current Status
  * main_raylib.c - normal raylib with c.
  * main_flecs.c - Flecs build test.
 
+# Design:
+  Well working on module some degree to break apart to handle some libs to make it easy or hard depend on how to code correctly on the builds.
+
+  Needed normal and module to test the correct way to handle input and collision later build tests.
+
 ---
 
 # How It Works
