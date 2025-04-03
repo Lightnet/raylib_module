@@ -168,10 +168,12 @@ set(LUA_MODULE_SRC_FILES
 # MAIN
 add_executable(${PROJECT_NAME} 
     # src/main.c
+    # src/raylib_collision.c
+    src/raylib_collision_fps.c
     # src/main_flecs.c
     # src/main_raylib.c
     # src/main_luajit.c
-    src/main_raylib.c
+    # src/main_raylib.c
     # src/raylib_nuklear_test.c
     # src/raylib_flecs_nuklear.c
     ${LUA_MODULE_SRC_FILES}

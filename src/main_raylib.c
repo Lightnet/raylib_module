@@ -95,7 +95,7 @@ int main(void) {
     };
     Model cube = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
 
-    TransformNode player = CreateTransformNode((Vector3){0, 0, 0}, QuaternionIdentity(), (Vector3){1, 1, 1}, NULL, WHITE);
+    TransformNode player = CreateTransformNode((Vector3){0, 2, 0}, QuaternionIdentity(), (Vector3){1, 1, 1}, NULL, WHITE);
     TransformNode gun = CreateTransformNode((Vector3){-0.4f, -0.3f, 0.5f}, QuaternionIdentity(), (Vector3){0.2f, 0.2f, 0.2f}, &player, RED);
     gun.model = &cube;
     AddChild(&player, &gun);
