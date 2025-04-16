@@ -3,6 +3,12 @@
     "raymath.h": "c",
     "enet.h": "c",
     "stdlib.h": "c",
-    "raylib.h": "c"
+    "raylib.h": "c",
+    "chrono": "c",
+    "future": "c",
+    "system_error": "c",
+    "xlocale": "c",
+    "flecs.h": "c",
+    "xiosbase": "c"
   }
 }

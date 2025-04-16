@@ -163,6 +163,8 @@ set(LUA_MODULE_SRC_FILES
     src/lua_raymath.c 
     src/lua_raygui.c
     src/lua_flecs.c
+    src/flecs_module.c
+    src/flecs_raylib.c
 )
 
 # MAIN
@@ -265,19 +267,13 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 set(BUILD_ALL_EXAMPLES ON)
 
 set(examples
-  src/main_flecs.c
+  # src/main_flecs.c
+  # src/main_flecs_render.c
   #src/main_luajit.c # load script
-  src/main_raylib.c
-  src/raylib_collision_fps.c
-  src/raylib_collision.c
-#     #src/test.c
-#     #src/test_flecs01.
-#     # src/raylib_flecs02.c
-#     # src/flecs_init.c
-#     # src/flecs_init02.c
-#     # src/flecs_init03.c
-#     #src/test_flecs02.c
-#     #src/raylib_flecs.c
+  # src/main_raylib.c
+  # src/raylib_collision_fps.c
+  # src/raylib_collision.c
+  src/main_flecs_module.c
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
