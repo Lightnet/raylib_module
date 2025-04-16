@@ -146,7 +146,7 @@ int main() {
   //ECS_COMPONENT(world, PhysicsBody);
 
   // Initialize raylib
-  InitWindow(800, 600, "Jolt + Raylib Test");
+  InitWindow(800, 600, "main flecs");
   SetTargetFPS(60);
 
   // Adjust camera to properly view the scene

@@ -1,4 +1,4 @@
-#include "raylib_lua.h"
+#include "lua_raylib.h"
 #include "lua_utils.h"
 #include <raylib.h>
 

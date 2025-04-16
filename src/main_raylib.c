@@ -8,7 +8,7 @@
 #include "raymath.h"
 #include <stdlib.h>
 
-#define ENET_IMPLEMENTATION
+// #define ENET_IMPLEMENTATION
 #include <enet.h>
 
 typedef struct TransformNode {

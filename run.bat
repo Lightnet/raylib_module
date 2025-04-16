@@ -31,8 +31,8 @@ echo Running %APPNAME%...
 
 cd build\Debug\
 
-@REM %EXECUTABLE% demo.lua
-%EXECUTABLE%
+%EXECUTABLE% demo.lua
+@REM %EXECUTABLE%
 
 @REM if %ERRORLEVEL% NEQ 0 (
 @REM     echo Program exited with error code %ERRORLEVEL%

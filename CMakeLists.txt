@@ -158,25 +158,30 @@ if(NOT EXISTS ${MIMALLOC_DLL} OR "${mimalloc_SOURCE_DIR}/src/alloc.c" IS_NEWER_T
 endif()
 
 set(LUA_MODULE_SRC_FILES
-    src/enet_lua.c
-    src/raylib_lua.c 
-    src/raymath_lua.c 
-    src/raygui_lua.c
-    src/flecs_lua.c
+    src/lua_enet.c
+    src/lua_raylib.c 
+    src/lua_raymath.c 
+    src/lua_raygui.c
+    src/lua_flecs.c
 )
 
 # MAIN
 add_executable(${PROJECT_NAME} 
     # src/main.c
     # src/raylib_collision.c
-    src/raylib_collision_fps.c
+    # src/raylib_collision_fps.c
     # src/main_flecs.c
     # src/main_raylib.c
-    # src/main_luajit.c
+    src/main_luajit.c
     # src/main_raylib.c
     # src/raylib_nuklear_test.c
     # src/raylib_flecs_nuklear.c
     ${LUA_MODULE_SRC_FILES}
+)
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+  # -DENET_IMPLEMENTATION
+  -D_CRT_SECURE_NO_WARNINGS
 )
 
 if(TARGET luajit_build)
@@ -254,35 +259,17 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMENT "Copying script.lua to output directory"
 )
 
-# # TEST 01
-# add_executable(test01 
-#     src/test.c
-# )
-# target_link_libraries(test01 PRIVATE
-#     raylib
-#     flecs
-#     luajit
-#     mimalloc
-# )
-# target_link_libraries(test01 PRIVATE ws2_32 winmm)
-# # FLECS 02
-# add_executable(test02 
-#     src/test_flecs01.c
-# )
-# target_link_libraries(test02 PRIVATE
-#     raylib
-#     flecs
-#     luajit
-#     mimalloc
-# )
-# target_link_libraries(test02 PRIVATE ws2_32 winmm)
-
 # set(BUILD_ALL_EXAMPLES OFF CACHE BOOL "Build all examples")
 
 # #set(BUILD_ALL_EXAMPLES OFF)
-# set(BUILD_ALL_EXAMPLES ON)
+set(BUILD_ALL_EXAMPLES ON)
 
-# set(examples
+set(examples
+  src/main_flecs.c
+  #src/main_luajit.c # load script
+  src/main_raylib.c
+  src/raylib_collision_fps.c
+  src/raylib_collision.c
 #     #src/test.c
 #     #src/test_flecs01.
 #     # src/raylib_flecs02.c
@@ -291,38 +278,58 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #     # src/flecs_init03.c
 #     #src/test_flecs02.c
 #     #src/raylib_flecs.c
-# )
+)
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
-# foreach(example_source ${examples})
-#     #message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
-#     get_filename_component(example_name ${example_source} NAME_WE)
-#     string(REPLACE ".c" "" example_name ${example_name})
+foreach(example_source ${examples})
+    #message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
+    get_filename_component(example_name ${example_source} NAME_WE)
+    string(REPLACE ".c" "" example_name ${example_name})
     
-#     # Create individual option, default ON
-#     option(BUILD_${example_name} "Build ${example_name} example" ON)
+    # Create individual option, default ON
+    option(BUILD_${example_name} "Build ${example_name} example" ON)
     
-#     # Build only if BUILD_ALL_EXAMPLES is ON and individual option is ON
-#     # If BUILD_ALL_EXAMPLES is OFF, nothing builds regardless of individual options
-#     if(BUILD_ALL_EXAMPLES)
-#         if(BUILD_${example_name})
-#             add_executable(${example_name} ${example_source})
+    # Build only if BUILD_ALL_EXAMPLES is ON and individual option is ON
+    # If BUILD_ALL_EXAMPLES is OFF, nothing builds regardless of individual options
+    if(BUILD_ALL_EXAMPLES)
+        if(BUILD_${example_name})
+            add_executable(
+              ${example_name} 
+              ${example_source}
+              ${LUA_MODULE_SRC_FILES}
+            )
+
+            # target_compile_definitions(${example_name} PUBLIC
+            #   -DENET_IMPLEMENTATION
+            # )
             
-#             target_link_libraries(${example_name} PRIVATE
-#                 raylib
-#                 flecs
-#                 luajit
-#                 mimalloc
-#             )
+            target_link_libraries(${example_name} PRIVATE
+                raylib
+                flecs
+                luajit
+                # mimalloc
+                mimalloc-static # working
+            )
+
+            target_include_directories(${example_name} PRIVATE
+                ${CMAKE_SOURCE_DIR}/include
+                ${raylib_SOURCE_DIR}/src
+                ${luajit_SOURCE_DIR}/src
+                ${raygui_SOURCE_DIR}/src
+                ${enet_SOURCE_DIR}/include
+                ${flecs_SOURCE_DIR}/include
+                ${mimalloc_SOURCE_DIR}/include
+                ${raylib_nuklear_SOURCE_DIR}/include
+            )
             
-#             if(WIN32)
-#                 target_link_libraries(${example_name} PRIVATE
-#                     ws2_32
-#                     winmm
-#                 )
-#             endif()
+            if(WIN32)
+                target_link_libraries(${example_name} PRIVATE
+                    ws2_32
+                    winmm
+                )
+            endif()
             
-#             message(STATUS "Added example: ${example_name}")
-#         endif()
-#     endif()
-# endforeach()
+            message(STATUS "Added example: ${example_name}")
+        endif()
+    endif()
+endforeach()

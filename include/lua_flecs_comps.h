@@ -1,5 +1,5 @@
-#ifndef FLECS_LUA_COMPS_H
-#define FLECS_LUA_COMPS_H
+#ifndef LUA_FLECS_COMPS_H
+#define LUA_FLECS_COMPS_H
 
 // Metatable names
 #define FLECS_WORLD_MT "FlecsWorld"

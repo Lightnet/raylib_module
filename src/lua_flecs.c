@@ -1,4 +1,4 @@
-#include "flecs_lua_comps.h"
+#include "lua_flecs_comps.h"
 #include <stdio.h>
 
 // Global variables

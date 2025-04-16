@@ -1,5 +1,8 @@
 {
   "files.associations": {
-    "raymath.h": "c"
+    "raymath.h": "c",
+    "enet.h": "c",
+    "stdlib.h": "c",
+    "raylib.h": "c"
   }
 }

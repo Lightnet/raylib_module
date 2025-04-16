@@ -1,5 +1,5 @@
-#ifndef FLECS_LUA_H
-#define FLECS_LUA_H
+#ifndef LUA_FLECS_H
+#define LUA_FLECS_H
 
 // Metatable name for ecs_world_t
 //#define ECS_WORLD_MT "ecs_world_t"

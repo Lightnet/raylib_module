@@ -6,8 +6,8 @@
 
 #include "raylib.h"
 
-#define ENET_IMPLEMENTATION
-#include <enet.h>
+// #define ENET_IMPLEMENTATION
+// #include <enet.h>
 
 int main(void)
 {

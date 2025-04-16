@@ -1,5 +1,5 @@
-#ifndef RAYGUI_LUAJIT_H
-#define RAYGUI_LUAJIT_H
+#ifndef LUA_RAYGUI_H
+#define LUA_RAYGUI_H
 
 #include <lua.h>
 

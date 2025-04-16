@@ -1,5 +1,5 @@
-#ifndef RAYMATH_LUAJIT_H
-#define RAYMATH_LUAJIT_H
+#ifndef LUA_RAYMATH_H
+#define LUA_RAYMATH_H
 
 #include <lua.h>
 

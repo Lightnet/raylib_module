@@ -6,8 +6,8 @@
 
 #include "raylib.h"
 #include "raymath.h"
-#define ENET_IMPLEMENTATION
-#include <enet.h>
+// #define ENET_IMPLEMENTATION
+// #include <enet.h>
 
 // Object entity structure
 typedef enum { OBJ_BOX, OBJ_SPHERE, OBJ_MESH } ObjectType;

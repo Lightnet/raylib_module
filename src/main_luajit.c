@@ -4,7 +4,7 @@
 #define NOUSER
 #define MMNOSOUND
 
-#define ENET_IMPLEMENTATION
+//#define ENET_IMPLEMENTATION
 #include <enet.h>
 
 #include <lua.h>
@@ -15,11 +15,11 @@
 #include <string.h>
 #include "mimalloc.h"
 
-#include "raylib_lua.h"
-#include "enet_lua.h"
-#include "raymath_lua.h"
-#include "raygui_lua.h"
-#include "flecs_lua.h"
+#include "lua_raylib.h"
+#include "lua_enet.h"
+#include "lua_raymath.h"
+#include "lua_raygui.h"
+#include "lua_flecs.h"
 
 // Custom allocator using mimalloc
 static void *mimalloc_lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
