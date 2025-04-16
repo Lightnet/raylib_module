@@ -63,8 +63,67 @@ void flecs_setup_module_system(ecs_iter_t *it){
   ecs_print(1,"flecs_setup_module_system");
 }
 
+// SHUTDOWN > CLEAN // test
+void flecs_shutdown_event_system(ecs_iter_t *it){
+  ecs_print(1,"[module] flecs_shutdown_event_system");
+  ecs_emit(it->world, &(ecs_event_desc_t) {
+    .event = CleanUpEvent,
+    .entity = CleanUpModule
+  });
+}
+// CLEAN UP > GRAPHIC // test
+void flecs_cleanup_event_system(ecs_iter_t *it){
+  ecs_print(1,"[module] flecs_cleanup_event_system");
+  ecs_emit(it->world, &(ecs_event_desc_t) {
+    .event = CleanUpGraphicEvent,
+    .entity = CleanUpGraphic
+  });
+}
+// GRAPHIC > CLOSE // test
+void flecs_cleanup_graphic_event_system(ecs_iter_t *it){
+  ecs_print(1,"[module] flecs_cleanup_graphic_event_system");
+  ecs_emit(it->world, &(ecs_event_desc_t) {
+    .event = CloseEvent,
+    .entity = CloseModule
+  });
+}
+// CLOSE // exit application
+void flecs_close_event_system(ecs_iter_t *it){
+  ecs_print(1,"[module] flecs_close_event_system");
+
+}
 
 void flecs_register_systems(ecs_world_t *world){
+
+  // Create an entity observer
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = ShutDownModule }},
+    .events = { ShutDownEvent },
+    .callback = flecs_shutdown_event_system
+  });
+
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = CleanUpModule }},
+    .events = { CleanUpEvent },
+    .callback = flecs_cleanup_event_system
+  });
+
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = CleanUpGraphic }},
+    .events = { CleanUpGraphicEvent },
+    .callback = flecs_cleanup_graphic_event_system
+  });
+
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = CloseModule }},
+    .events = { CloseEvent },
+    .callback = flecs_close_event_system
+  });
+
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "flecs_setup_system", 

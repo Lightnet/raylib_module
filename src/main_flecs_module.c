@@ -5,7 +5,6 @@
 #include "raymath.h" // For quaternion and matrix operations
 #include "rlgl.h"    // For rlPushMatrix, rlTranslatef, etc.
 #include "flecs.h"
-
 #include "flecs_module.h"
 #include "flecs_raylib.h"
 

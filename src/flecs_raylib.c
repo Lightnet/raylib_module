@@ -16,9 +16,14 @@ void raylib_setup_system(ecs_iter_t *it){
 void raylib_input_system(ecs_iter_t *it){
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
   if(!rl_ctx) return;
-  rl_ctx->shouldQuit = WindowShouldClose();
-  if(rl_ctx->shouldQuit){
-    ecs_print(1,"CLOSE!");
+  //rl_ctx->shouldQuit = WindowShouldClose();
+  if(WindowShouldClose() == true && rl_ctx->isShutDown == false){
+    rl_ctx->isShutDown = true;
+    ecs_print(1,"RAYLIB WINDOW CLOSE!");
+    ecs_emit(it->world, &(ecs_event_desc_t) {
+      .event = ShutDownEvent,
+      .entity = ShutDownModule
+    });
   }
 }
 
@@ -103,6 +108,14 @@ void raylib_cleanup_system(ecs_world_t *world){
 
 }
 
+void raylib_close_event_system(ecs_iter_t *it){
+  ecs_print(1,"[module raylib] close_event_system");
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if(!rl_ctx) return;
+  //rl_ctx->isShutDown = true;
+  rl_ctx->shouldQuit = true;
+}
+
 void raylib_register_components(ecs_world_t *world){
 
   ECS_COMPONENT_DEFINE(world, Transform3D);
@@ -112,6 +125,13 @@ void raylib_register_components(ecs_world_t *world){
 }
 
 void raylib_register_systems(ecs_world_t *world){
+
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = CloseModule }},
+    .events = { CloseEvent },
+    .callback = raylib_close_event_system
+  });
 
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
