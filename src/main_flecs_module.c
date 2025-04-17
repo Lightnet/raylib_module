@@ -138,7 +138,7 @@ void user_input_system(ecs_iter_t *it){
             t[i].rotation = QuaternionMultiply(t[i].rotation, rot);
           }
         }
-        
+
         if (IsKeyPressed(KEY_R)) {
           t[i].position = (Vector3){0.0f, 0.0f, 0.0f};
           t[i].rotation = QuaternionIdentity();
@@ -159,6 +159,8 @@ void user_input_system(ecs_iter_t *it){
 }
 
 void rl_hud_render2d_system(ecs_iter_t *it){
+  PlayerInput_T *pi_ctx = ecs_singleton_ensure(it->world, PlayerInput_T);
+  if (!pi_ctx) return;
   Transform3D *t = ecs_field(it, Transform3D, 0);
   // ecs_print(1,"hud");
   if(it->count == 1){
@@ -182,6 +184,8 @@ void rl_hud_render2d_system(ecs_iter_t *it){
   if(it->count == 2){
     DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 10+30, 20, DARKGRAY);
   }
+
+  DrawText(TextFormat("Toggled mode to: %s\n", pi_ctx->isMovementMode ? "Movement" : "Rotation"), 10, 200, 20, DARKGRAY);
 }
 
 int main() {
