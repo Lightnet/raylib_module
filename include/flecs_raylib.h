@@ -14,6 +14,7 @@ typedef struct {
   bool isShutDown;
   int width;
   int height;
+  bool isLoaded;
 } RayLibContext;
 
 ECS_COMPONENT_DECLARE(RayLibContext);
@@ -30,9 +31,17 @@ ECS_COMPONENT_DECLARE(Transform3D);
 
 // Pointer component for raylib Model
 typedef struct {
-  Model* model;
+  Model model;
+  bool isLoaded;
 } ModelComponent;
 ECS_COMPONENT_DECLARE(ModelComponent);
+
+typedef struct {
+  Model* model;
+} PHComponent;
+ECS_COMPONENT_DECLARE(PHComponent);
+
+Model g_model;
 
 
 void flecs_raylib_module_init(ecs_world_t *world);

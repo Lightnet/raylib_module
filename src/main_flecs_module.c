@@ -9,6 +9,8 @@
 #include "flecs_raylib.h"
 
 void setup_world_scene(ecs_iter_t *it){
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if (!rl_ctx || !rl_ctx->isCameraValid) return;
   ecs_print(1,"set up scene");
   // Create cube entity
   ecs_entity_t cube = ecs_new(it->world);
@@ -22,9 +24,29 @@ void setup_world_scene(ecs_iter_t *it){
   });
 
   // Load cube model and store in ModelComponent
-  Mesh cubeMesh = GenMeshCube(1.0f, 1.0f, 1.0f);
-  Model cubeModel = LoadModelFromMesh(cubeMesh);
-  ecs_set(it->world, cube, ModelComponent, {&cubeModel});
+  // Mesh cubeMesh = GenMeshCube(1.0f, 1.0f, 1.0f);
+  // Model cubeModel = LoadModelFromMesh(cubeMesh);
+  Model cubeModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+  ecs_set(it->world, cube, ModelComponent, {
+    .model=cubeModel,
+    .isLoaded=true
+  });
+
+  printf("  Mesh count: %d\n", cubeModel.meshCount);
+  printf("  Material count: %d\n", cubeModel.materialCount);
+  printf("  Vertex count (first mesh): %d\n", cubeModel.meshes[0].vertexCount);
+
+  Model cubeModel02 = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+
+  ecs_singleton_set(it->world, PHComponent, {.model=&cubeModel02});
+
+  Model cubeModel03 = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+  g_model = cubeModel03;
+  printf("  Mesh count: %d\n", cubeModel03.meshCount);
+  printf("  Material count: %d\n", cubeModel03.materialCount);
+  printf("  Vertex count (first mesh): %d\n", cubeModel03.meshes[0].vertexCount);
+
+  rl_ctx->isLoaded=true;
 }
 
 int main() {

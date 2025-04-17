@@ -41,7 +41,7 @@ void RenderBeginSystem(ecs_iter_t *it) {
 
 // Begin camera system
 void BeginCamera3DSystem(ecs_iter_t *it) {
-  // printf("BeginCamera3DSystem\n");
+  //printf("BeginCamera3DSystem\n");
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
   if (!rl_ctx || !rl_ctx->isCameraValid) return;
   BeginMode3D(rl_ctx->camera);
@@ -49,11 +49,46 @@ void BeginCamera3DSystem(ecs_iter_t *it) {
 
 //update object mesh transform
 void CameraRender3DSystem(ecs_iter_t *it) {
-  // printf("CameraRender3DSystem\n");
+  //printf("CameraRender3DSystem\n");
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if (!rl_ctx || !rl_ctx->isCameraValid || !rl_ctx->isLoaded) return;
+
+  PHComponent *ph_ctx = ecs_singleton_ensure(it->world, PHComponent);
+  if (!ph_ctx) return;
+
+
+  // ecs_print(1," Mesh count: %d", ph_ctx->model->meshCount);
+  // if(g_model){
+    // ecs_print(1," Mesh count: %d", g_model.meshCount);
+  // }
+  
+
   Transform3D *t = ecs_field(it, Transform3D, 0);
   ModelComponent *m = ecs_field(it, ModelComponent, 1);
-  
-  // for (int i = 0; i < it->count; i++) {
+  //ecs_print(1,"count %d", it->count);
+  for (int i = 0; i < it->count; i++) {
+    if (m[i].isLoaded) {
+      //DrawModelWires(*ph_ctx->model, (Vector3){0,0,0}, 1.0f, RED);
+      // DrawModelWires(*ph_ctx->model, (Vector3){0,0,0}, 1.0f, RED);
+      DrawModelWires(m[i].model, (Vector3){0,0,0}, 1.0f, RED);
+      // ecs_print(1,"not null");
+      // DrawModelWires(*m[i].model, (Vector3){0,0,0}, 1.0f, RED);
+      // ecs_print(1," Mesh count: %d",m[i].model->meshCount);
+      // if(m[i].model->meshCount == 0){
+      //   Model cubeModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+      //   m[i].model = &cubeModel;
+      // }
+      //ecs_print(1,"  Vertex count (first mesh): %d\n", m[i].model->meshes[0].vertexCount);
+      // ecs_print(1,"pos:x %.2f, pos:y %.2f, pos:z %.2f", 
+      //   m[i].model->transform.m12, 
+      //   m[i].model->transform.m13,
+      //   m[i].model->transform.m14
+      // );
+
+
+    }else{
+      ecs_print(1,"null");
+    }
   //     if (m[i].model) {
   //         // Get entity name
   //         const char *name = ecs_get_name(it->world, it->entities[i]);
@@ -71,13 +106,13 @@ void CameraRender3DSystem(ecs_iter_t *it) {
   //         m[i].model->transform = t[i].worldMatrix;
   //         DrawModelWires(*m[i].model, (Vector3){0,0,0}, 1.0f, color);
   //     }
-  // }
+  }
   DrawGrid(10, 1.0f);
 }
 
 // End camera system
 void EndCamera3DSystem(ecs_iter_t *it) {
-  // printf("EndCamera3DSystem\n");
+  //printf("EndCamera3DSystem\n");
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
   if (!rl_ctx || !rl_ctx->isCameraValid) return;
   EndMode3D();
@@ -119,6 +154,7 @@ void raylib_register_components(ecs_world_t *world){
   ECS_COMPONENT_DEFINE(world, Transform3D);
   ECS_COMPONENT_DEFINE(world, ModelComponent);
   ECS_COMPONENT_DEFINE(world, RayLibContext);
+  ECS_COMPONENT_DEFINE(world, PHComponent);
 
 }
 
@@ -206,6 +242,7 @@ void flecs_raylib_module_init(ecs_world_t *world){
     .isShutDown=false,
     .camera = camera,
     .isCameraValid = true,
+    .isLoaded = false
   });
 
   
