@@ -59,19 +59,33 @@ Current Status
 ```
 # MAIN
 add_executable(${PROJECT_NAME} 
-    # src/main.c
-    # src/raylib_collision.c
-    src/raylib_collision_fps.c
-    # src/main_flecs.c
-    # src/main_raylib.c
-    # src/main_luajit.c
-    # src/main_raylib.c
-    # src/raylib_nuklear_test.c
-    # src/raylib_flecs_nuklear.c
-    ${LUA_MODULE_SRC_FILES}
+  # src/main.c
+  # src/raylib_collision.c
+  # src/raylib_collision_fps.c
+  # src/main_flecs.c
+  # src/main_raylib.c
+  src/main_luajit.c
+  ${LUA_MODULE_SRC_FILES}
 )
 ```
-Example area not be rework to link to libs yet.
+
+```
+set(examples
+  # src/main_flecs.c
+  # src/main_flecs_render.c
+  # src/main_luajit.c # load script
+  # src/main_raylib.c
+  # src/raylib_collision_fps.c
+  # src/raylib_collision.c
+  src/main_flecs_module.c
+)
+```
+Example files current being tested. Note that one file can be active due to over lap function name conflicts.
+
+## main file:
+ - src/main_luajit.c (work in progress, lua script)
+ - src/main_flecs_module.c (work in progress, module design)
+
 
 
 ---
