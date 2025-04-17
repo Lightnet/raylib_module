@@ -11,6 +11,7 @@
     "flecs.h": "c",
     "xiosbase": "c",
     "stdio.h": "c",
-    "random": "c"
+    "random": "c",
+    "flecs_raylib.h": "c"
   }
 }

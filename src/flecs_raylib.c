@@ -2,6 +2,25 @@
 #include "flecs_module.h"
 #include "flecs_raylib.h"
 
+// Function to check if the model exists/loaded
+bool IsModelValid(ModelComponent* component) {
+  if (component == NULL || !component->isLoaded) {
+      return false;
+  }
+  // Additional check: ensure model has valid mesh data
+  return component->model.meshCount > 0 && component->model.meshes != NULL;
+}
+
+// // Simulate loading a model
+// myModel.model = LoadModel("path/to/model.obj");
+// myModel.isLoaded = true; // Mark as loaded
+// // Check if model is valid
+// if (IsModelValid(&myModel)) {
+//     DrawModel(myModel.model, (Vector3){0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
+// } else {
+//     DrawText("Model is not valid", 10, 10, 20, RED);
+// }
+
 void raylib_setup_system(ecs_iter_t *it){
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
   if(!rl_ctx) return;
@@ -13,7 +32,7 @@ void raylib_setup_system(ecs_iter_t *it){
 
 void raylib_input_system(ecs_iter_t *it){
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
-  if(!rl_ctx) return;
+  if(!rl_ctx || rl_ctx->isShutDown == true) return;
   //rl_ctx->shouldQuit = WindowShouldClose();
   if(WindowShouldClose() == true && rl_ctx->isShutDown == false){
     rl_ctx->isShutDown = true;
@@ -25,6 +44,17 @@ void raylib_input_system(ecs_iter_t *it){
   }
 }
 
+void raylib_move_system(ecs_iter_t *it){
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if(!rl_ctx || rl_ctx->isShutDown == true) return;
+
+  for (int i = 0; i < it->count; i++) {
+    //const char *name = ecs_get_name(it->world, it->entities[i]);
+
+  }
+
+}
+
 // Logic update system
 void LogicUpdateSystem(ecs_iter_t *it) {
   //...
@@ -33,6 +63,8 @@ void LogicUpdateSystem(ecs_iter_t *it) {
 
 // Render begin system
 void RenderBeginSystem(ecs_iter_t *it) {
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if(!rl_ctx || rl_ctx->isShutDown == true) return;
   // printf("RenderBeginSystem\n");
   BeginDrawing();
   ClearBackground(RAYWHITE);
@@ -43,7 +75,7 @@ void RenderBeginSystem(ecs_iter_t *it) {
 void BeginCamera3DSystem(ecs_iter_t *it) {
   //printf("BeginCamera3DSystem\n");
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
-  if (!rl_ctx || !rl_ctx->isCameraValid) return;
+  if (!rl_ctx || !rl_ctx->isCameraValid || rl_ctx->isShutDown == true) return;
   BeginMode3D(rl_ctx->camera);
 }
 
@@ -51,7 +83,7 @@ void BeginCamera3DSystem(ecs_iter_t *it) {
 void CameraRender3DSystem(ecs_iter_t *it) {
   //printf("CameraRender3DSystem\n");
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
-  if (!rl_ctx || !rl_ctx->isCameraValid || !rl_ctx->isLoaded) return;
+  if (!rl_ctx || !rl_ctx->isCameraValid || !rl_ctx->isLoaded || rl_ctx->isShutDown == true) return;
 
   PHComponent *ph_ctx = ecs_singleton_ensure(it->world, PHComponent);
   if (!ph_ctx) return;
@@ -67,45 +99,27 @@ void CameraRender3DSystem(ecs_iter_t *it) {
   ModelComponent *m = ecs_field(it, ModelComponent, 1);
   //ecs_print(1,"count %d", it->count);
   for (int i = 0; i < it->count; i++) {
-    if (m[i].isLoaded) {
-      //DrawModelWires(*ph_ctx->model, (Vector3){0,0,0}, 1.0f, RED);
-      // DrawModelWires(*ph_ctx->model, (Vector3){0,0,0}, 1.0f, RED);
-      DrawModelWires(m[i].model, (Vector3){0,0,0}, 1.0f, RED);
-      // ecs_print(1,"not null");
-      // DrawModelWires(*m[i].model, (Vector3){0,0,0}, 1.0f, RED);
-      // ecs_print(1," Mesh count: %d",m[i].model->meshCount);
-      // if(m[i].model->meshCount == 0){
-      //   Model cubeModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
-      //   m[i].model = &cubeModel;
-      // }
-      //ecs_print(1,"  Vertex count (first mesh): %d\n", m[i].model->meshes[0].vertexCount);
-      // ecs_print(1,"pos:x %.2f, pos:y %.2f, pos:z %.2f", 
-      //   m[i].model->transform.m12, 
-      //   m[i].model->transform.m13,
-      //   m[i].model->transform.m14
-      // );
-
-
-    }else{
-      ecs_print(1,"null");
-    }
-  //     if (m[i].model) {
-  //         // Get entity name
-  //         const char *name = ecs_get_name(it->world, it->entities[i]);
-  //         Color color = RED; // Default color
+    // if (m[i].isLoaded) {
+    // }else{
+    //   ecs_print(1,"null");
+    // }
+      if (IsModelValid(&m[i].model)) {
+          // Get entity name
+          const char *name = ecs_get_name(it->world, it->entities[i]);
+          Color color = RED; // Default color
           
-  //         if (name) {
-  //             if (strcmp(name, "Cube") == 0) {
-  //                 color = RED;
-  //             } else if (strcmp(name, "Floor") == 0) {
-  //                 color = GRAY;
-  //             }
-  //         }
+          if (name) {
+              if (strcmp(name, "Cube") == 0) {
+                  color = RED;
+              } else if (strcmp(name, "Floor") == 0) {
+                  color = GRAY;
+              }
+          }
           
-  //         // Update model transform with world matrix from physics
-  //         m[i].model->transform = t[i].worldMatrix;
-  //         DrawModelWires(*m[i].model, (Vector3){0,0,0}, 1.0f, color);
-  //     }
+          // Update model transform with world matrix from physics
+          m[i].model.transform = t[i].worldMatrix;
+          DrawModelWires(m[i].model, (Vector3){0,0,0}, 1.0f, color);
+      }
   }
   DrawGrid(10, 1.0f);
 }
@@ -114,12 +128,14 @@ void CameraRender3DSystem(ecs_iter_t *it) {
 void EndCamera3DSystem(ecs_iter_t *it) {
   //printf("EndCamera3DSystem\n");
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
-  if (!rl_ctx || !rl_ctx->isCameraValid) return;
+  if (!rl_ctx || !rl_ctx->isCameraValid || rl_ctx->isShutDown == true) return;
   EndMode3D();
 }
 
 // Render system, 2D only can't use 3D
 void Render2DSystem(ecs_iter_t *it) {
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if (!rl_ctx || !rl_ctx->isShutDown) return;
   //...
   // printf("Render2DSystem\n");
   DrawFPS(10, 10);
@@ -127,15 +143,39 @@ void Render2DSystem(ecs_iter_t *it) {
 
 // Render end system
 void RenderEndSystem(ecs_iter_t *it) {
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if (!rl_ctx || rl_ctx->isShutDown == true) return;
   // printf("RenderEndSystem\n");
   EndDrawing();
 }
 
-void raylib_cleanup_event_system(ecs_iter_t *it){
+void raylib_cleanup_system(ecs_world_t *world){
+
+  ecs_print(1, "MODEL CLEAN UP...");
+
+  ecs_query_t *q = ecs_query(world, {
+    .terms = {
+      { .id = ecs_id(ModelComponent) },
+    }
+  });
+
+  ecs_iter_t s_it = ecs_query_iter(world, q);
+
+  while (ecs_query_next(&s_it)) {
+    ModelComponent *p = ecs_field(&s_it, ModelComponent, 0);
+    for (int i = 0; i < s_it.count; i ++) {
+
+      if(p[i].isLoaded){
+        UnloadModel(p[i].model);
+      }
+    }
+  }
 
 }
 
-void raylib_cleanup_system(ecs_world_t *world){
+void raylib_cleanup_event_system(ecs_iter_t *it){
+
+  raylib_cleanup_system(it->world);
 
 }
 
@@ -160,6 +200,13 @@ void raylib_register_components(ecs_world_t *world){
 
 void raylib_register_systems(ecs_world_t *world){
 
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = CloseModule }},
+    .events = { CloseEvent },
+    .callback = raylib_cleanup_event_system
+  });
+  
   ecs_observer(world, {
     // Not interested in any specific component
     .query.terms = {{ EcsAny, .src.id = CloseModule }},
@@ -197,7 +244,7 @@ void raylib_register_systems(ecs_world_t *world){
     .query.terms = {
       { .id = ecs_id(Transform3D), .src.id = EcsSelf },
       { .id = ecs_id(ModelComponent), .src.id = EcsSelf }
-    }, 
+    },
     .callback = CameraRender3DSystem
   });
 
@@ -245,6 +292,5 @@ void flecs_raylib_module_init(ecs_world_t *world){
     .isLoaded = false
   });
 
-  
 }
 

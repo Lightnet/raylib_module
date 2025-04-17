@@ -45,6 +45,6 @@ Model g_model;
 
 
 void flecs_raylib_module_init(ecs_world_t *world);
-
+bool HasModel(ModelComponent* component);
 
 #endif
