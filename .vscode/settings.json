@@ -9,6 +9,7 @@
     "system_error": "c",
     "xlocale": "c",
     "flecs.h": "c",
-    "xiosbase": "c"
+    "xiosbase": "c",
+    "stdio.h": "c"
   }
 }

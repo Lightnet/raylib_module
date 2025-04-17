@@ -8,6 +8,7 @@ void flecs_init_phases(ecs_world_t *world){
   OnSetUpPhase = ecs_new_w_id(world, EcsPhase);
   OnSetupGraphicPhase = ecs_new_w_id(world, EcsPhase);
   OnSetupModulePhase = ecs_new_w_id(world, EcsPhase);
+  OnSetupWorldPhase = ecs_new_w_id(world, EcsPhase);
 
   LogicUpdatePhase = ecs_new_w_id(world, EcsPhase);
   BeginRenderPhase = ecs_new_w_id(world, EcsPhase);
@@ -22,6 +23,7 @@ void flecs_init_phases(ecs_world_t *world){
   ecs_add_pair(world, OnSetUpPhase, EcsDependsOn, EcsOnStart);
   ecs_add_pair(world, OnSetupGraphicPhase, EcsDependsOn, OnSetUpPhase);
   ecs_add_pair(world, OnSetupModulePhase, EcsDependsOn, OnSetupGraphicPhase);
+  ecs_add_pair(world, OnSetupWorldPhase, EcsDependsOn, OnSetupModulePhase);
 
   // Set phase dependencies, must single flow be in order
   ecs_add_pair(world, LogicUpdatePhase, EcsDependsOn, EcsPreUpdate);
@@ -63,7 +65,9 @@ void flecs_setup_module_system(ecs_iter_t *it){
   ecs_print(1,"flecs_setup_module_system");
 }
 
+//===============================================
 // SHUTDOWN > CLEAN // test
+//===============================================
 void flecs_shutdown_event_system(ecs_iter_t *it){
   ecs_print(1,"[module] flecs_shutdown_event_system");
   ecs_emit(it->world, &(ecs_event_desc_t) {
@@ -71,7 +75,9 @@ void flecs_shutdown_event_system(ecs_iter_t *it){
     .entity = CleanUpModule
   });
 }
+//===============================================
 // CLEAN UP > GRAPHIC // test
+//===============================================
 void flecs_cleanup_event_system(ecs_iter_t *it){
   ecs_print(1,"[module] flecs_cleanup_event_system");
   ecs_emit(it->world, &(ecs_event_desc_t) {
@@ -79,7 +85,9 @@ void flecs_cleanup_event_system(ecs_iter_t *it){
     .entity = CleanUpGraphic
   });
 }
+//===============================================
 // GRAPHIC > CLOSE // test
+//===============================================
 void flecs_cleanup_graphic_event_system(ecs_iter_t *it){
   ecs_print(1,"[module] flecs_cleanup_graphic_event_system");
   ecs_emit(it->world, &(ecs_event_desc_t) {
@@ -87,7 +95,9 @@ void flecs_cleanup_graphic_event_system(ecs_iter_t *it){
     .entity = CloseModule
   });
 }
+//===============================================
 // CLOSE // exit application
+//===============================================
 void flecs_close_event_system(ecs_iter_t *it){
   ecs_print(1,"[module] flecs_close_event_system");
 
@@ -135,7 +145,7 @@ void flecs_register_systems(ecs_world_t *world){
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "flecs_setup_graphic_system", 
-        .add = ecs_ids(ecs_dependson(OnSetUpPhase)) 
+        .add = ecs_ids(ecs_dependson(OnSetupGraphicPhase)) 
     }),
     .callback = flecs_setup_graphic_system
   });
@@ -143,16 +153,17 @@ void flecs_register_systems(ecs_world_t *world){
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "flecs_setup_module_system", 
-        .add = ecs_ids(ecs_dependson(OnSetUpPhase)) 
+        .add = ecs_ids(ecs_dependson(OnSetupModulePhase)) 
     }),
     .callback = flecs_setup_module_system
   });
 }
 
-
 void flecs_module_init(ecs_world_t *world){
   ecs_print(1,"init module...");
+  ecs_print(1,"flecs_register_components");
   flecs_register_components(world);
+  ecs_print(1,"flecs_register_systems");
   flecs_register_systems(world);
-
+  ecs_print(1,"flecs module finish");
 }

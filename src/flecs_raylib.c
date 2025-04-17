@@ -1,8 +1,6 @@
-
-
+// 
 #include "flecs_module.h"
 #include "flecs_raylib.h"
-
 
 void raylib_setup_system(ecs_iter_t *it){
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
@@ -26,7 +24,6 @@ void raylib_input_system(ecs_iter_t *it){
     });
   }
 }
-
 
 // Logic update system
 void LogicUpdateSystem(ecs_iter_t *it) {
@@ -56,25 +53,25 @@ void CameraRender3DSystem(ecs_iter_t *it) {
   Transform3D *t = ecs_field(it, Transform3D, 0);
   ModelComponent *m = ecs_field(it, ModelComponent, 1);
   
-  for (int i = 0; i < it->count; i++) {
-      if (m[i].model) {
-          // Get entity name
-          const char *name = ecs_get_name(it->world, it->entities[i]);
-          Color color = RED; // Default color
+  // for (int i = 0; i < it->count; i++) {
+  //     if (m[i].model) {
+  //         // Get entity name
+  //         const char *name = ecs_get_name(it->world, it->entities[i]);
+  //         Color color = RED; // Default color
           
-          if (name) {
-              if (strcmp(name, "Cube") == 0) {
-                  color = RED;
-              } else if (strcmp(name, "Floor") == 0) {
-                  color = GRAY;
-              }
-          }
+  //         if (name) {
+  //             if (strcmp(name, "Cube") == 0) {
+  //                 color = RED;
+  //             } else if (strcmp(name, "Floor") == 0) {
+  //                 color = GRAY;
+  //             }
+  //         }
           
-          // Update model transform with world matrix from physics
-          m[i].model->transform = t[i].worldMatrix;
-          DrawModelWires(*m[i].model, (Vector3){0,0,0}, 1.0f, color);
-      }
-  }
+  //         // Update model transform with world matrix from physics
+  //         m[i].model->transform = t[i].worldMatrix;
+  //         DrawModelWires(*m[i].model, (Vector3){0,0,0}, 1.0f, color);
+  //     }
+  // }
   DrawGrid(10, 1.0f);
 }
 
@@ -86,8 +83,7 @@ void EndCamera3DSystem(ecs_iter_t *it) {
   EndMode3D();
 }
 
-// Render system
-//2D only can't use 3D
+// Render system, 2D only can't use 3D
 void Render2DSystem(ecs_iter_t *it) {
   //...
   // printf("Render2DSystem\n");
@@ -114,14 +110,16 @@ void raylib_close_event_system(ecs_iter_t *it){
   if(!rl_ctx) return;
   //rl_ctx->isShutDown = true;
   rl_ctx->shouldQuit = true;
+  // close
+  //CloseWindow();
 }
 
 void raylib_register_components(ecs_world_t *world){
 
   ECS_COMPONENT_DEFINE(world, Transform3D);
   ECS_COMPONENT_DEFINE(world, ModelComponent);
-
   ECS_COMPONENT_DEFINE(world, RayLibContext);
+
 }
 
 void raylib_register_systems(ecs_world_t *world){
@@ -188,7 +186,7 @@ void raylib_register_systems(ecs_world_t *world){
 }
 
 void flecs_raylib_module_init(ecs_world_t *world){
-  ecs_log(1, "Initializing raylib module...");
+  ecs_print(1, "Initializing raylib module...");
   raylib_register_components(world);
   raylib_register_systems(world);
 
@@ -209,4 +207,7 @@ void flecs_raylib_module_init(ecs_world_t *world){
     .camera = camera,
     .isCameraValid = true,
   });
+
+  
 }
+

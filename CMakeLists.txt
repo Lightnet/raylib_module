@@ -269,7 +269,7 @@ set(BUILD_ALL_EXAMPLES ON)
 set(examples
   # src/main_flecs.c
   # src/main_flecs_render.c
-  #src/main_luajit.c # load script
+  # src/main_luajit.c # load script
   # src/main_raylib.c
   # src/raylib_collision_fps.c
   # src/raylib_collision.c

@@ -13,6 +13,7 @@ ECS_COMPONENT_DECLARE(PluginModule);
 ecs_entity_t OnSetUpPhase;
 ecs_entity_t OnSetupGraphicPhase;
 ecs_entity_t OnSetupModulePhase;
+ecs_entity_t OnSetupWorldPhase;
 
 ecs_entity_t LogicUpdatePhase;
 ecs_entity_t BeginRenderPhase;
@@ -32,8 +33,8 @@ ecs_entity_t CleanUpGraphicEvent;
 ecs_entity_t CleanUpGraphic;
 ecs_entity_t CloseEvent;
 ecs_entity_t CloseModule;
+
 // init module
 void flecs_module_init(ecs_world_t *world);
-
 
 #endif
