@@ -1,4 +1,4 @@
-
+// To set up flecs module needed for handle on start set up and run time update order.
 
 #include "flecs_module.h"
 

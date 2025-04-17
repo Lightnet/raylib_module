@@ -31,20 +31,52 @@ ECS_COMPONENT_DECLARE(Transform3D);
 
 // Pointer component for raylib Model
 typedef struct {
-  Model model;
   bool isLoaded;
+  Model model;
 } ModelComponent;
 ECS_COMPONENT_DECLARE(ModelComponent);
-
+// test
 typedef struct {
   Model* model;
 } PHComponent;
 ECS_COMPONENT_DECLARE(PHComponent);
-
+// test
 Model g_model;
 
+typedef struct {
+  bool pressed;
+  bool state;
+  bool current;
+} ECS_RL_KEY_STATE_T;
+ECS_COMPONENT_DECLARE(ECS_RL_KEY_STATE_T);
+
+typedef struct {
+  float x;
+  float y;
+  float xrel;
+  float yrel;
+} ECS_RL_MOTION_T;
+
+typedef struct {
+  float x;
+  float y;
+} ECS_RL_WHEEL_T;
+
+typedef struct {
+  ECS_RL_KEY_STATE_T keys[340];
+  // ECS_SDL_MOUSE_T mouse;
+  // SDL_Event event;
+} ECS_RL_INPUT_T;
+ECS_COMPONENT_DECLARE(ECS_RL_INPUT_T);
+
+typedef struct {
+  bool isMovementMode;
+  bool tabPressed;
+} PlayerInput_T;
+ECS_COMPONENT_DECLARE(PlayerInput_T);
+
+bool is_model_valid(ModelComponent* component);
 
 void flecs_raylib_module_init(ecs_world_t *world);
-bool HasModel(ModelComponent* component);
 
 #endif

@@ -224,7 +224,6 @@ if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32 winmm)
 endif()
 
-
 # Copy DLLs to output directory
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -274,6 +273,7 @@ set(examples
   # src/raylib_collision_fps.c
   # src/raylib_collision.c
   src/main_flecs_module.c
+  # src/raylib3d_flecs_transform_hierarchy02.c
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
