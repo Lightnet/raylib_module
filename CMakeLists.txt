@@ -272,8 +272,12 @@ set(examples
   # src/main_raylib.c
   # src/raylib_collision_fps.c
   # src/raylib_collision.c
-  src/main_flecs_module.c
+  # src/main_flecs_module.c
   # src/raylib3d_flecs_transform_hierarchy02.c
+  # src/raylib3d_flecs_transform_hierarchy03.c
+  # src/raylib3d_flecs_transform_hierarchy04.c
+  src/raylib3d_flecs_transform_hierarchy06.c
+  # src/flecs_test.c
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
@@ -292,7 +296,7 @@ foreach(example_source ${examples})
             add_executable(
               ${example_name} 
               ${example_source}
-              ${LUA_MODULE_SRC_FILES}
+              # ${LUA_MODULE_SRC_FILES}
             )
 
             # target_compile_definitions(${example_name} PUBLIC

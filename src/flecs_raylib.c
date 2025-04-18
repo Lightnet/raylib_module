@@ -72,7 +72,7 @@ void UpdateTransformSystem(ecs_iter_t *it) {
 
       // Get entity name and position
       const char *entity_name = ecs_get_name(it->world, entity) ? ecs_get_name(it->world, entity) : "(unnamed)";
-      Vector3 entity_pos = transform->position;
+      //Vector3 entity_pos = transform->position;
       
       // Print child position
       // printf("child %s position (%.2f, %.2f, %.2f)\n", 
@@ -93,7 +93,6 @@ void UpdateTransformSystem(ecs_iter_t *it) {
           // printf("-parent: None\n");
       }
       // printf("\n");
-
       //ecs_modified_id(it->world, entity, ecs_id(Transform3D)); // Notify Flecs of update
   }
 }
