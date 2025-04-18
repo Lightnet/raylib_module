@@ -93,6 +93,8 @@ ECS_COMPONENT_DECLARE(Transform3D);
 ```
   For reason added bool isDirty is to do once check update math to reduce recalculated and load if entity need update to not lag that been recalculated already.
 
+  For parent it need set isDirty true to update the world matrix else it would be default to zero position.
+
 # inputs:
 
 ```c

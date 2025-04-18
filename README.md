@@ -4,18 +4,17 @@
 - MIT License - Free to use, modify, and share!
 
 # Table of Contents  
- * [What You Need](#What-You-Need)
- * [Libraries Used](#libraries-used)
  * [Information](#information)
+ * [Design Goal](#design-goals)
+ * [Libraries Used](#libraries-used)
  * [Lua Script](#lua-script)
- * [Current Status](#current-status)
  * [Flecs Module](#flecs-module)
  * [Project files](#project-files)
  * [Design](#design)
  * [CMakeLists.txt](#cmakeLists.txt)
  * [Main Files](#main-files)
  * [How It Works](#how-it-works)
- * [Design Goal](#design-goal)
+ * [What You Need](#What-You-Need)
  * [Building It](#building-it)
  * [Lua Script Tips](#lua-script-tips)
  * [Troubleshooting](#troubleshooting)
@@ -23,28 +22,31 @@
 
 
 ---
-
-# What You Need
-- Visual Studio 2022: For building LuaJIT (uses a Makefile).
-- CMake: To generate the build files and compile everything.
-
----
-
-# Libraries Used
-- raylib 5.5: Core library for graphics, input, and more. Includes raymath (work-in-progress Lua wrapper).
-- raygui 4.0: Simple GUI library for raylib (work-in-progress Lua wrapper).
-- enet 2.6.2: Networking library (DLL support is buggy right now).
-- LuaJIT 2.1 Fast Lua runtime to run scripts.
-  - Lua 5.1
-
----
-
 # Information:
   Work in progress build.
 
   By using raylib, raygui, enet, raymath, LuaJIT and other libraries. 
 
   There are two build for raylib for module and lua script.
+
+## Design Goals:
+- Run Lua scripts as the entry point instead of rebuilding a binary each time.
+- Keep C-to-Lua and Lua-to-C data (like colors, vectors) in a clear, matching format.
+- raylib, flecs and module design to keep things simple.
+
+---
+
+# Libraries Used
+- [x] raylib 5.5: Core library for graphics, input, and more. Includes raymath (work-in-progress Lua wrapper).
+- [x] raygui 4.0: Simple GUI library for raylib (work-in-progress Lua wrapper).
+- [x] enet 2.6.2: Networking library (DLL support is buggy right now).
+- [x] LuaJIT 2.1 Fast Lua runtime to run scripts.
+  - [x] Lua 5.1
+- [x] flecs 4.0.5
+- [ ] raylib nuklear 5.5.1
+- [ ] mimalloc 2.2.2 
+
+---
 
 # Lua Script:
   Lua script for designed to be simple and avoid recompiling C code every time—just write Lua and run!
@@ -62,12 +64,50 @@
 
 ---
 
-# Project files:
+# Project Files:
   There are three main files for module and normal test build.
 
  * main_luajit.c - for LuaJIT for script lua.
  * main_raylib.c - normal raylib with c.
  * main_flecs_module.c - Flecs build test.
+```
+project/
+- docs
+- examples
+- include
+  - flecs_module.h                                // module
+  - flecs_raylib.h                                // module
+  - lua_enet.h                                    // lua
+  - lua_flecs_comps.h                             // lua
+  - lua_flecs.h                                   // lua
+  - lua_raygui.h                                  // lua
+  - lua_raylib.h                                  // lua
+  - lua_raymath.h                                 // lua
+  - lua_utils.h                                   // lua
+- src
+  - flecs_module.c                                // module
+  - flecs_raylib.c                                // module
+  - flecs_set_test.c                              // test
+  - flecs_test.c                                  // test
+  - lua_enet.c                                    // lua
+  - lua_flecs.c                                   // lua
+  - lua_raygui.c                                  // lua
+  - lua_raylib.c                                  // lua
+  - lua_raymath.c                                 // lua
+  - main_flecs_module.c                           // main module
+  - main_flecs_render.c                           // main render test
+  - main_flecs.c                                  // main flecs test
+  - main_luajit.c                                 // main lua
+  - main_raylib.c                                 // main test
+  - raylib_collision_fps.c                        // main test
+  - raylib_collision.c                            // main test
+  - raylib3d_flecs_transform_hierarchy06.c        // main transform 3d test
+- build.bat //config cmake and compile project VS2022
+- run.bat // for raylib lua script
+- runm.bat //for raylib flecs module run test
+- runt.bat //for raylib3d flecs transform hierarchy 06  test
+```
+  Note the batch script may change for testing builds.
 
 # Design:
   Well working on module some degree to break apart to handle some libs to make it easy or hard depend on how to code correctly on the builds.
@@ -115,11 +155,11 @@ We use CMake to build one binary (raylib_luajit.exe) that loads Lua scripts. The
 1. Lua Wrapper (Recommended): Pre-built C-to-Lua bindings (e.g., rl.InitWindow).
 2. FFI (Alternative): Load raylib’s C functions directly from Lua (needs a DLL).
 
-## Design Goal
-- Run Lua scripts as the entry point instead of rebuilding a binary each time.
-- Keep C-to-Lua and Lua-to-C data (like colors, vectors) in a clear, matching format.
-
 ---
+
+# What You Need
+- Visual Studio 2022: For building LuaJIT (uses a Makefile).
+- CMake: To generate the build files and compile everything.
 
 # Building It
 1. Install Requirements:
@@ -171,4 +211,8 @@ We use CMake to build one binary (raylib_luajit.exe) that loads Lua scripts. The
 # Credits:
 - raylib-lua: Inspired setup ([https://github.com/raysan5/raylib-lua](https://github.com/raysan5/raylib-lua)).
 	- AI Help: Used Grok (xAI) to debug CMake and wrappers.
+- flecs:
+  - people from discord server.
+- raylib github
+- 
 
