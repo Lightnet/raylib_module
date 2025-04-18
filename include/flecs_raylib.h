@@ -21,11 +21,12 @@ ECS_COMPONENT_DECLARE(RayLibContext);
 
 // Transform3D component
 typedef struct {
-  Vector3 position;
-  Quaternion rotation;
-  Vector3 scale;
-  Matrix localMatrix;
-  Matrix worldMatrix;
+  Vector3 position;                     // Local position
+  Quaternion rotation;                  // Local rotation
+  Vector3 scale;                        // Local scale
+  Matrix localMatrix;                   // Local transform matrix
+  Matrix worldMatrix;                   // World transform matrix
+  bool isDirty;                         // Flag to indicate if transform needs updating
 } Transform3D;
 ECS_COMPONENT_DECLARE(Transform3D);
 

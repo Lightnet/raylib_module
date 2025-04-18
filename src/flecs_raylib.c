@@ -3,6 +3,140 @@
 #include "flecs_module.h"
 #include "flecs_raylib.h"
 
+// Helper function to update a single transform
+void UpdateTransform(ecs_world_t *world, ecs_entity_t entity, Transform3D *transform) {
+  // Get parent entity
+  ecs_entity_t parent = ecs_get_parent(world, entity);
+  const char *name = ecs_get_name(world, entity) ? ecs_get_name(world, entity) : "(unnamed)";
+  bool parentIsDirty = false;
+
+  // Check if parent is dirty
+  if (parent && ecs_is_valid(world, parent)) {
+      const Transform3D *parent_transform = ecs_get(world, parent, Transform3D);
+      if (parent_transform && parent_transform->isDirty) {
+          parentIsDirty = true;
+      }
+  }
+
+  // Skip update if neither this transform nor its parent is dirty
+  if (!transform->isDirty && !parentIsDirty) {
+      // printf("Skipping update for %s (not dirty)\n", name);
+      return;
+  }
+
+  // Compute local transform
+  Matrix translation = MatrixTranslate(transform->position.x, transform->position.y, transform->position.z);
+  Matrix rotation = QuaternionToMatrix(transform->rotation);
+  Matrix scaling = MatrixScale(transform->scale.x, transform->scale.y, transform->scale.z);
+  transform->localMatrix = MatrixMultiply(scaling, MatrixMultiply(rotation, translation));
+
+  if (!parent || !ecs_is_valid(world, parent)) {
+      // Root entity: world matrix = local matrix
+      transform->worldMatrix = transform->localMatrix;
+      printf("Root %s position (%.2f, %.2f, %.2f)\n", name, transform->position.x, transform->position.y, transform->position.z);
+  } else {
+      // Child entity: world matrix = local matrix * parent world matrix
+      const Transform3D *parent_transform = ecs_get(world, parent, Transform3D);
+      if (!parent_transform) {
+          printf("Error: Parent %s lacks Transform3D for %s\n",
+                 ecs_get_name(world, parent) ? ecs_get_name(world, parent) : "(unnamed)", name);
+          transform->worldMatrix = transform->localMatrix;
+          return;
+      }
+
+      // Validate parent world matrix
+      float px = parent_transform->worldMatrix.m12;
+      float py = parent_transform->worldMatrix.m13;
+      float pz = parent_transform->worldMatrix.m14;
+      if (fabs(px) > 1e6 || fabs(py) > 1e6 || fabs(pz) > 1e6) {
+          printf("Error: Invalid parent %s world pos (%.2f, %.2f, %.2f) for %s\n",
+                 ecs_get_name(world, parent) ? ecs_get_name(world, parent) : "(unnamed)",
+                 px, py, pz, name);
+          transform->worldMatrix = transform->localMatrix;
+          return;
+      }
+
+      // Compute world matrix
+      transform->worldMatrix = MatrixMultiply(transform->localMatrix, parent_transform->worldMatrix);
+
+      // Extract world position
+      float wx = transform->worldMatrix.m12;
+      float wy = transform->worldMatrix.m13;
+      float wz = transform->worldMatrix.m14;
+
+      // Debug output
+      const char *parent_name = ecs_get_name(world, parent) ? ecs_get_name(world, parent) : "(unnamed)";
+      printf("Child %s (ID: %llu), parent %s (ID: %llu)\n",
+             name, (unsigned long long)entity, parent_name, (unsigned long long)parent);
+      printf("Child %s position (%.2f, %.2f, %.2f), parent %s world pos (%.2f, %.2f, %.2f), world pos (%.2f, %.2f, %.2f)\n",
+             name, transform->position.x, transform->position.y, transform->position.z,
+             parent_name, px, py, pz, wx, wy, wz);
+  }
+
+  // Mark children as dirty to ensure they update in the next frame
+  ecs_iter_t it = ecs_children(world, entity);
+  while (ecs_children_next(&it)) {
+      for (int i = 0; i < it.count; i++) {
+          Transform3D *child_transform = ecs_get_mut(world, it.entities[i], Transform3D);
+          if (child_transform) {
+              child_transform->isDirty = true;
+              //ecs_set(world, it.entities[i], Transform3D, *child_transform);
+          }
+      }
+  }
+
+  // Reset isDirty after updating
+  transform->isDirty = false;
+}
+
+// Recursive function to process entity and its children
+void ProcessEntityHierarchy(ecs_world_t *world, ecs_entity_t entity) {
+  // Update the current entity's transform
+  Transform3D *transform = ecs_get_mut(world, entity, Transform3D);
+  bool wasUpdated = false;
+  if (transform) {
+      // Only update if dirty or parent is dirty
+      ecs_entity_t parent = ecs_get_parent(world, entity);
+      bool parentIsDirty = false;
+      if (parent && ecs_is_valid(world, parent)) {
+          const Transform3D *parent_transform = ecs_get(world, parent, Transform3D);
+          if (parent_transform && parent_transform->isDirty) {
+              parentIsDirty = true;
+          }
+      }
+      if (transform->isDirty || parentIsDirty) {
+          UpdateTransform(world, entity, transform);
+          //ecs_set(world, entity, Transform3D, *transform); // Commit changes
+          wasUpdated = true;
+      }
+  }
+
+  // Skip processing children if this entity was not updated
+  if (!wasUpdated) {
+      return;
+  }
+
+  // Iterate through children
+  ecs_iter_t it = ecs_children(world, entity);
+  while (ecs_children_next(&it)) {
+      for (int i = 0; i < it.count; i++) {
+          ecs_entity_t child = it.entities[i];
+          ProcessEntityHierarchy(world, child); // Recursively process child
+      }
+  }
+}
+
+// System to update all transforms in hierarchical order
+void UpdateTransformHierarchySystem(ecs_iter_t *it) {
+  // Process only root entities (no parent)
+  Transform3D *transforms = ecs_field(it, Transform3D, 0);
+  for (int i = 0; i < it->count; i++) {
+      ecs_entity_t entity = it->entities[i];
+      ProcessEntityHierarchy(it->world, entity);
+  }
+}
+
+
 // Function to check if the model exists/loaded
 bool is_model_valid(ModelComponent* component) {
   if (component == NULL || !component->isLoaded) {
@@ -53,48 +187,6 @@ void rl_input_system(ecs_iter_t *it){
     }
   }
 
-}
-
-// Update transform for all nodes
-void UpdateTransformSystem(ecs_iter_t *it) {
-  Transform3D *transforms = ecs_field(it, Transform3D, 0); // Field 0: Self Transform3D
-  Transform3D *parent_transforms = ecs_field(it, Transform3D, 1); // Field 1: Parent Transform3D (optional)
-  
-  for (int i = 0; i < it->count; i++) {
-      ecs_entity_t entity = it->entities[i];
-      Transform3D *transform = &transforms[i];
-      
-      // Update local transform
-      Matrix translation = MatrixTranslate(transform->position.x, transform->position.y, transform->position.z);
-      Matrix rotation = QuaternionToMatrix(transform->rotation);
-      Matrix scaling = MatrixScale(transform->scale.x, transform->scale.y, transform->scale.z);
-      transform->localMatrix = MatrixMultiply(scaling, MatrixMultiply(rotation, translation));
-
-      // Get entity name and position
-      const char *entity_name = ecs_get_name(it->world, entity) ? ecs_get_name(it->world, entity) : "(unnamed)";
-      //Vector3 entity_pos = transform->position;
-      
-      // Print child position
-      // printf("child %s position (%.2f, %.2f, %.2f)\n", 
-      //     entity_name, entity_pos.x, entity_pos.y, entity_pos.z);
-      
-      // Check if parent data is available
-      if (ecs_field_is_set(it, 1)) { // Parent term is set
-          Transform3D *parent_transform = &parent_transforms[i];
-          ecs_entity_t parent = ecs_get_parent(it->world, entity);
-          const char *parent_name = ecs_get_name(it->world, parent) ? ecs_get_name(it->world, parent) : "(unnamed)";
-          Vector3 parent_pos = parent_transform->position;
-          transform->worldMatrix = MatrixMultiply(transform->localMatrix, parent_transform->worldMatrix);
-          // printf("-parent %s: position (%.2f, %.2f, %.2f), child world pos (%.2f, %.2f, %.2f)\n", 
-          //     parent_name, parent_pos.x, parent_pos.y, parent_pos.z,
-          //     transform->worldMatrix.m12, transform->worldMatrix.m13, transform->worldMatrix.m14);
-      } else {
-          transform->worldMatrix = transform->localMatrix; // No parent, use local as world
-          // printf("-parent: None\n");
-      }
-      // printf("\n");
-      //ecs_modified_id(it->world, entity, ecs_id(Transform3D)); // Notify Flecs of update
-  }
 }
 
 // Render begin system
@@ -299,14 +391,19 @@ void rl_register_systems(ecs_world_t *world){
     .callback = rl_end_render_system
   });
 
+  // LogicUpdatePhase
+
+
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "UpdateTransformSystem", .add = ecs_ids(ecs_dependson(LogicUpdatePhase)) }),
+    .entity = ecs_entity(world, {
+        .name = "UpdateTransformHierarchySystem",
+        .add = ecs_ids(ecs_dependson(LogicUpdatePhase))
+    }),
     .query.terms = {
-        { .id = ecs_id(Transform3D), .src.id = EcsSelf },           // Term 0: Entity has Transform3D
-        { .id = ecs_id(Transform3D), .src.id = EcsUp,              // Term 1: Parent has Transform3D
-          .trav = EcsChildOf, .oper = EcsOptional }                // Traversal in ecs_term_t
+        { .id = ecs_id(Transform3D), .src.id = EcsSelf },
+        { .id = ecs_pair(EcsChildOf, EcsWildcard), .oper = EcsNot } // No parent
     },
-    .callback = UpdateTransformSystem
+    .callback = UpdateTransformHierarchySystem
   });
 
 }
