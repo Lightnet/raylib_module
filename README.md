@@ -87,7 +87,6 @@ project/
 - src
   - flecs_module.c                                // module
   - flecs_raylib.c                                // module
-  - flecs_set_test.c                              // test
   - flecs_test.c                                  // test
   - lua_enet.c                                    // lua
   - lua_flecs.c                                   // lua

@@ -225,33 +225,47 @@ if(WIN32)
 endif()
 
 # Copy DLLs to output directory
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${RAYLIB_DLL}"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/raylib.dll"
-    COMMENT "Copying raylib.dll to output directory"
-)
+set(RAYLIB_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/raylib.dll")
+if(NOT EXISTS ${RAYLIB_DLL_DEST})
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${RAYLIB_DLL}"
+          "$<TARGET_FILE_DIR:${PROJECT_NAME}>/raylib.dll"
+      COMMENT "Copying raylib.dll to output directory"
+  )
+endif()
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${LUAJIT_DLL}"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/lua51.dll"
-    COMMENT "Copying lua51.dll to output directory"
-)
+set(LUAJIT_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/lua51.dll")
+if(NOT EXISTS ${LUAJIT_DLL_DEST})
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${LUAJIT_DLL}"
+          "$<TARGET_FILE_DIR:${PROJECT_NAME}>/lua51.dll"
+      COMMENT "Copying lua51.dll to output directory"
+  )
+endif()
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${FLECS_DLL}"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/flecs.dll"
-    COMMENT "Copying flecs.dll to output directory"
-)
+set(FLECS_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/flecs.dll")
+message(STATUS "FLECS_DLL_DEST >>> ${FLECS_DLL_DEST}")
+if(NOT EXISTS ${FLECS_DLL_DEST})
+  message(STATUS "NOT FOUND FLECS>>>>>>>>")
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${FLECS_DLL}"
+          "$<TARGET_FILE_DIR:${PROJECT_NAME}>/flecs.dll"
+      COMMENT "Copying flecs.dll to output directory"
+  )
+endif()
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${MIMALLOC_DLL}"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/mimalloc-debug.dll"  # Updated to match cached name
-    COMMENT "Copying mimalloc-debug.dll to output directory"
-)
+set(MIMALLOC_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/mimalloc-debug.dll")
+if(NOT EXISTS "${MIMALLOC_DLL_DEST}")
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${MIMALLOC_DLL}"
+          "$<TARGET_FILE_DIR:${PROJECT_NAME}>/mimalloc-debug.dll"  # Updated to match cached name
+      COMMENT "Copying mimalloc-debug.dll to output directory"
+  )
+endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -272,13 +286,10 @@ set(examples
   # src/main_raylib.c
   # src/raylib_collision_fps.c
   # src/raylib_collision.c
-  src/main_flecs_module.c
-  # src/raylib3d_flecs_transform_hierarchy02.c
-  # src/raylib3d_flecs_transform_hierarchy03.c
-  # src/raylib3d_flecs_transform_hierarchy04.c
+  # src/main_flecs_module.c
+  src/test.c
   # src/raylib3d_flecs_transform_hierarchy06.c
   # src/flecs_test.c
-  # src/flecs_set_test.c
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
@@ -297,7 +308,7 @@ foreach(example_source ${examples})
             add_executable(
               ${example_name} 
               ${example_source}
-              ${LUA_MODULE_SRC_FILES}
+              # ${LUA_MODULE_SRC_FILES}
             )
 
             # target_compile_definitions(${example_name} PUBLIC

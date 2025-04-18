@@ -136,7 +136,6 @@ void UpdateTransformHierarchySystem(ecs_iter_t *it) {
   }
 }
 
-
 // Function to check if the model exists/loaded
 bool is_model_valid(ModelComponent* component) {
   if (component == NULL || !component->isLoaded) {
@@ -146,10 +145,32 @@ bool is_model_valid(ModelComponent* component) {
   return component->model.meshCount > 0 && component->model.meshes != NULL;
 }
 
+// Custom logging function
+// void CustomLog(int msgType, const char *text, va_list args){
+//   char timeStr[64] = { 0 };
+//   time_t now = time(NULL);
+//   struct tm *tm_info = localtime(&now);
+//   strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
+//   printf("[%s] ", timeStr);
+//   switch (msgType)
+//   {
+//       case LOG_INFO: printf("[INFO] : "); break;
+//       case LOG_ERROR: printf("[ERROR]: "); break;
+//       case LOG_WARNING: printf("[WARN] : "); break;
+//       case LOG_DEBUG: printf("[DEBUG]: "); break;
+//       default: break;
+//   }
+//   vprintf(text, args);
+//   printf("\n");
+// }
+
 void rl_setup_system(ecs_iter_t *it){
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
   if(!rl_ctx) return;
   ecs_print(1,"setup raylib window");
+
+  // Set custom logger
+  // SetTraceLogCallback(CustomLog);
 
   InitWindow(rl_ctx->width, rl_ctx->height, "main flecs");
   SetTargetFPS(60);

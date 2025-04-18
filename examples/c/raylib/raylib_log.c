@@ -24,6 +24,7 @@ void CustomLog(int msgType, const char *text, va_list args)
 
     //vprintf(text, args);
     //printf("\n");
+    return;
 }
 
 int main(void)

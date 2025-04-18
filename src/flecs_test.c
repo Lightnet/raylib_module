@@ -3,7 +3,6 @@
 //
 #include "flecs.h"
 
-
 int main(){
   // Initialize Flecs world
   ecs_world_t *world = ecs_init();
@@ -11,17 +10,64 @@ int main(){
   ecs_entity_t parent = ecs_entity(world, {.name = "Parent"}); 
   ecs_entity_t child = ecs_entity(world, {.name = "Child"});
   // Create the hierarchy
-
   ecs_add_pair(world, child, EcsChildOf, parent);
+
+  ecs_progress(world, 0);
+
+  // working 
   if (ecs_has_pair(world, child, EcsChildOf, parent)){
     ecs_print(1,"found ecs_has_pair");
   }
 
-  if (parent == ecs_lookup(world, "Parent.Child")) {
+  if (parent == ecs_lookup(world, "Parent")) {
     // true
-    ecs_print(1,"found");
+    ecs_print(1,"ecs_lookup Parent found");
+  }
+  //nope
+  if (parent == ecs_lookup_from(world, parent, "Child")) {
+    ecs_print(1,"ecs_lookup_from found");
+  }
+  //nope
+  if (parent == ecs_lookup(world, "Parent.Child")) {
+    ecs_print(1,"ecs_lookup found");
   }
 
+  const char *nameparent = ecs_get_name(world, parent);
+  ecs_print(1,"NAME: %s", nameparent); // Parent
+
+  ecs_entity_t l_parent = ecs_get_parent(world, child);
+  if(l_parent){
+    const char *nameparent02 = ecs_get_name(world, l_parent);
+    ecs_print(1,"get parent NAME: %s", nameparent02); // Parent
+  }
+
+  // Returns path, result must be freed
+  char *path = ecs_get_path(world, child);
+  ecs_print(1,"PATH: %s", path); // Parent.Child
+  ecs_os_free(path);
+
+  ecs_print(1,"parent children count");
+  ecs_iter_t it = ecs_children(world, parent);
+  while (ecs_children_next(&it)) {
+    ecs_print(1,"Children Count: %d", it.count);
+    for (int i = 0; i < it.count; i ++) {
+      ecs_entity_t child = it.entities[i];
+      const char *namechild = ecs_get_name(world, child);
+      ecs_print(1,"Name Child: %s", namechild);
+    }
+  }
+  ecs_print(1,"remove child from parent");
+  ecs_remove_pair(world, child, EcsChildOf, parent);
+  ecs_print(1,"parent children count");
+  it = ecs_children(world, parent);
+  while (ecs_children_next(&it)) {
+    ecs_print(1,"Children Count: %d", it.count);
+    for (int i = 0; i < it.count; i ++) {
+      ecs_entity_t child = it.entities[i];
+      const char *namechild = ecs_get_name(world, child);
+      ecs_print(1,"Name Child: %s", namechild);
+    }
+  }
 
   //=============================================
   // working
@@ -38,8 +84,6 @@ int main(){
   //   // true
   //   ecs_print(1,"found");
   // }
-
-
 
   ecs_fini(world);
 
