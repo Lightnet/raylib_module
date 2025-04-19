@@ -44,8 +44,6 @@ void flecs_init_phases(ecs_world_t *world, FlecsPhases *phases){
 
 void flecs_register_components(ecs_world_t *world){
 
-  
-
   ShutDownEvent = ecs_new(world);
   ShutDownModule = ecs_entity(world, { .name = "ShutDownModule" });
 
@@ -58,6 +56,8 @@ void flecs_register_components(ecs_world_t *world){
   CloseEvent = ecs_new(world);
   CloseModule = ecs_entity(world, { .name = "CloseModule" });
 
+  ClickEvent = ecs_new(world);
+  Widget = ecs_entity(world, { .name = "Widget" });
 }
 
 void flecs_setup_system(ecs_iter_t *it){

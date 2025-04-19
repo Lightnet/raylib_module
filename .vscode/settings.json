@@ -14,6 +14,7 @@
     "random": "c",
     "flecs_raylib.h": "c",
     "flecs_module.h": "c",
-    "flecs_raygui.h": "c"
+    "flecs_raygui.h": "c",
+    "thread": "c"
   }
 }

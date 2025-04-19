@@ -40,6 +40,9 @@ ecs_entity_t CleanUpGraphic;
 ecs_entity_t CloseEvent;
 ecs_entity_t CloseModule;
 
+ecs_entity_t ClickEvent;
+ecs_entity_t Widget;
+
 // init module
 void flecs_module_init(ecs_world_t *world);
 
