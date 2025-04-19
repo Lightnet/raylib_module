@@ -38,13 +38,13 @@ void rg_register_systems(ecs_world_t *world){
     .callback = OnClick
   });
 
-  ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { 
-      .name = "render3d_raygui_system", 
-      .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D2Phase)) 
-    }),
-    .callback = render3d_raygui_system
-  });
+  // ecs_system_init(world, &(ecs_system_desc_t){
+  //   .entity = ecs_entity(world, { 
+  //     .name = "render3d_raygui_system", 
+  //     .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D2Phase)) 
+  //   }),
+  //   .callback = render3d_raygui_system
+  // });
 
 }
 

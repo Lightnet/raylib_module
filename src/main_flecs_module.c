@@ -194,26 +194,20 @@ void rl_hud_render2d_system(ecs_iter_t *it){
   if(it->count == 1){
     for (int i = 0; i < it->count; i++) {
       const char *name = ecs_get_name(it->world, it->entities[i]);
-      DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 80+20*i, 20, DARKGRAY);
+      DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 50+20*i, 20, DARKGRAY);
     }
+    DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 10+20, 20, DARKGRAY);
   }
 
   if(it->count == 2){
     for (int i = 0; i < it->count; i++) {
       const char *name = ecs_get_name(it->world, it->entities[i]);
-      DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 120+20*i, 20, DARKGRAY);
+      DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 90+20*i, 20, DARKGRAY);
     }
+    DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 50+20*1, 20, DARKGRAY);
   }
 
-  if(it->count == 1){
-    DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 10, 20, DARKGRAY);
-  }
-
-  if(it->count == 2){
-    DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 10+30, 20, DARKGRAY);
-  }
-
-  DrawText(TextFormat("Toggled mode to: %s\n", pi_ctx->isMovementMode ? "Movement" : "Rotation"), 10, 200, 20, DARKGRAY);
+  DrawText(TextFormat("Toggled mode to: %s\n", pi_ctx->isMovementMode ? "Movement" : "Rotation"), 10, 10, 20, DARKGRAY);
 }
 
 int main() {

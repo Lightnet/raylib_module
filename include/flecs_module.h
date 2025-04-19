@@ -39,7 +39,7 @@ ecs_entity_t CleanUpGraphicEvent;
 ecs_entity_t CleanUpGraphic;
 ecs_entity_t CloseEvent;
 ecs_entity_t CloseModule;
-
+// user input event gui
 ecs_entity_t ClickEvent;
 ecs_entity_t Widget;
 
