@@ -2,42 +2,49 @@
 
 #include "flecs_module.h"
 
-void flecs_init_phases(ecs_world_t *world){
+FlecsPhases GlobalPhases = {0};
+
+void flecs_init_phases(ecs_world_t *world, FlecsPhases *phases){
   // Define custom phases
 
-  OnSetUpPhase = ecs_new_w_id(world, EcsPhase);
-  OnSetupGraphicPhase = ecs_new_w_id(world, EcsPhase);
-  OnSetupModulePhase = ecs_new_w_id(world, EcsPhase);
-  OnSetupWorldPhase = ecs_new_w_id(world, EcsPhase);
+  phases->OnSetUpPhase = ecs_new_w_id(world, EcsPhase);
+  phases->OnSetupGraphicPhase = ecs_new_w_id(world, EcsPhase);
+  phases->OnSetupModulePhase = ecs_new_w_id(world, EcsPhase);
+  phases->OnSetupWorldPhase = ecs_new_w_id(world, EcsPhase);
 
-  LogicUpdatePhase = ecs_new_w_id(world, EcsPhase);
-  BeginRenderPhase = ecs_new_w_id(world, EcsPhase);
+  phases->LogicUpdatePhase = ecs_new_w_id(world, EcsPhase);
+  phases->BeginRenderPhase = ecs_new_w_id(world, EcsPhase);
   //only 3d model render and 2d will not work here.
-  BeginCamera3DPhase = ecs_new_w_id(world, EcsPhase);
-  UpdateCamera3DPhase = ecs_new_w_id(world, EcsPhase);
-  EndCamera3DPhase = ecs_new_w_id(world, EcsPhase);
+  phases->BeginCamera3DPhase = ecs_new_w_id(world, EcsPhase);
+  phases->UpdateCamera3DPhase = ecs_new_w_id(world, EcsPhase);
+  phases->EndCamera3DPhase = ecs_new_w_id(world, EcsPhase);
   //only 2d render if 3d will not work here.
-  Render2DPhase = ecs_new_w_id(world, EcsPhase);
-  EndRenderPhase = ecs_new_w_id(world, EcsPhase);
+  phases->Render2D1Phase = ecs_new_w_id(world, EcsPhase);
+  phases->Render2D2Phase = ecs_new_w_id(world, EcsPhase);
+  phases->Render2D3Phase = ecs_new_w_id(world, EcsPhase);
+  phases->EndRenderPhase = ecs_new_w_id(world, EcsPhase);
 
-  ecs_add_pair(world, OnSetUpPhase, EcsDependsOn, EcsOnStart);
-  ecs_add_pair(world, OnSetupGraphicPhase, EcsDependsOn, OnSetUpPhase);
-  ecs_add_pair(world, OnSetupModulePhase, EcsDependsOn, OnSetupGraphicPhase);
-  ecs_add_pair(world, OnSetupWorldPhase, EcsDependsOn, OnSetupModulePhase);
+  ecs_add_pair(world, phases->OnSetUpPhase, EcsDependsOn, EcsOnStart);
+  ecs_add_pair(world, phases->OnSetupGraphicPhase, EcsDependsOn, phases->OnSetUpPhase);
+  ecs_add_pair(world, phases->OnSetupModulePhase, EcsDependsOn, phases->OnSetupGraphicPhase);
+  ecs_add_pair(world, phases->OnSetupWorldPhase, EcsDependsOn, phases->OnSetupModulePhase);
 
   // Set phase dependencies, must single flow be in order
-  ecs_add_pair(world, LogicUpdatePhase, EcsDependsOn, EcsPreUpdate);
-  ecs_add_pair(world, BeginRenderPhase, EcsDependsOn, LogicUpdatePhase);
-  ecs_add_pair(world, BeginCamera3DPhase, EcsDependsOn, BeginRenderPhase);
-  ecs_add_pair(world, UpdateCamera3DPhase, EcsDependsOn, BeginCamera3DPhase);
-  ecs_add_pair(world, EndCamera3DPhase, EcsDependsOn, UpdateCamera3DPhase);
-  ecs_add_pair(world, Render2DPhase, EcsDependsOn, EndCamera3DPhase);
-  ecs_add_pair(world, EndRenderPhase, EcsDependsOn, Render2DPhase);
+  ecs_add_pair(world, phases->LogicUpdatePhase, EcsDependsOn, EcsPreUpdate);
+  ecs_add_pair(world, phases->BeginRenderPhase, EcsDependsOn, phases->LogicUpdatePhase);
+  ecs_add_pair(world, phases->BeginCamera3DPhase, EcsDependsOn, phases->BeginRenderPhase);
+  ecs_add_pair(world, phases->UpdateCamera3DPhase, EcsDependsOn, phases->BeginCamera3DPhase);
+  ecs_add_pair(world, phases->EndCamera3DPhase, EcsDependsOn, phases->UpdateCamera3DPhase);
+  ecs_add_pair(world, phases->Render2D1Phase, EcsDependsOn, phases->EndCamera3DPhase);
+  ecs_add_pair(world, phases->Render2D2Phase, EcsDependsOn, phases->Render2D1Phase);
+  ecs_add_pair(world, phases->Render2D3Phase, EcsDependsOn, phases->Render2D2Phase);
+  ecs_add_pair(world, phases->EndRenderPhase, EcsDependsOn, phases->Render2D3Phase);
 
 }
 
 void flecs_register_components(ecs_world_t *world){
-  flecs_init_phases(world);
+
+  
 
   ShutDownEvent = ecs_new(world);
   ShutDownModule = ecs_entity(world, { .name = "ShutDownModule" });
@@ -137,7 +144,7 @@ void flecs_register_systems(ecs_world_t *world){
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "flecs_setup_system", 
-        .add = ecs_ids(ecs_dependson(OnSetUpPhase)) 
+        .add = ecs_ids(ecs_dependson(GlobalPhases.OnSetUpPhase)) 
     }),
     .callback = flecs_setup_system
   });
@@ -145,7 +152,7 @@ void flecs_register_systems(ecs_world_t *world){
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "flecs_setup_graphic_system", 
-        .add = ecs_ids(ecs_dependson(OnSetupGraphicPhase)) 
+        .add = ecs_ids(ecs_dependson(GlobalPhases.OnSetupGraphicPhase)) 
     }),
     .callback = flecs_setup_graphic_system
   });
@@ -153,7 +160,7 @@ void flecs_register_systems(ecs_world_t *world){
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "flecs_setup_module_system", 
-        .add = ecs_ids(ecs_dependson(OnSetupModulePhase)) 
+        .add = ecs_ids(ecs_dependson(GlobalPhases.OnSetupModulePhase)) 
     }),
     .callback = flecs_setup_module_system
   });
@@ -161,6 +168,7 @@ void flecs_register_systems(ecs_world_t *world){
 
 void flecs_module_init(ecs_world_t *world){
   ecs_print(1,"init module...");
+  flecs_init_phases(world, &GlobalPhases);
   ecs_print(1,"flecs_register_components");
   flecs_register_components(world);
   ecs_print(1,"flecs_register_systems");

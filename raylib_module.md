@@ -24,7 +24,9 @@ ecs_entity_t BeginCamera3DPhase;
 ecs_entity_t UpdateCamera3DPhase;
 ecs_entity_t EndCamera3DPhase;
 //only 2d render if 3d will not work here.
-ecs_entity_t Render2DPhase;
+ecs_entity_t Render2D1Phase;
+ecs_entity_t Render2D2Phase;
+ecs_entity_t Render2D3Phase;
 ecs_entity_t EndRenderPhase;
 ```
 

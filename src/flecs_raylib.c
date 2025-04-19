@@ -363,30 +363,30 @@ void rl_register_systems(ecs_world_t *world){
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "rl_setup_system", 
-        .add = ecs_ids(ecs_dependson(OnSetUpPhase)) 
+        .add = ecs_ids(ecs_dependson(GlobalPhases.OnSetUpPhase)) 
     }),
     .callback = rl_setup_system
   });
 
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_input_system", .add = ecs_ids(ecs_dependson(LogicUpdatePhase)) }),
+    .entity = ecs_entity(world, { .name = "rl_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
     .callback = rl_input_system
   });
 
   // render the screen
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_render_begin_system", .add = ecs_ids(ecs_dependson(BeginRenderPhase)) }),
+    .entity = ecs_entity(world, { .name = "rl_render_begin_system", .add = ecs_ids(ecs_dependson(GlobalPhases.BeginRenderPhase)) }),
     .callback = rl_render_begin_system
    });
 
    //render started for camera 3d model only
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_begin_camera3d_system", .add = ecs_ids(ecs_dependson(BeginCamera3DPhase)) }),
+    .entity = ecs_entity(world, { .name = "rl_begin_camera3d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.BeginCamera3DPhase)) }),
     .callback = rl_begin_camera3d_system
   });
 
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_camera3d_system", .add = ecs_ids(ecs_dependson(UpdateCamera3DPhase)) }),
+    .entity = ecs_entity(world, { .name = "rl_camera3d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.UpdateCamera3DPhase)) }),
     .query.terms = {
       { .id = ecs_id(Transform3D), .src.id = EcsSelf },
       { .id = ecs_id(ModelComponent), .src.id = EcsSelf }
@@ -396,19 +396,19 @@ void rl_register_systems(ecs_world_t *world){
 
   //finish camera render
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_end_camera3d_system", .add = ecs_ids(ecs_dependson(EndCamera3DPhase)) }),
+    .entity = ecs_entity(world, { .name = "rl_end_camera3d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.EndCamera3DPhase)) }),
     .callback = rl_end_camera3d_system
   });
 
   //render 2d screen
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_render2d_system", .add = ecs_ids(ecs_dependson(Render2DPhase)) }),
+    .entity = ecs_entity(world, { .name = "rl_render2d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
     .callback = rl_render2d_system
   });
 
   //finish render
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_end_render_system", .add = ecs_ids(ecs_dependson(EndRenderPhase)) }),
+    .entity = ecs_entity(world, { .name = "rl_end_render_system", .add = ecs_ids(ecs_dependson(GlobalPhases.EndRenderPhase)) }),
     .callback = rl_end_render_system
   });
 
@@ -418,7 +418,7 @@ void rl_register_systems(ecs_world_t *world){
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, {
         .name = "UpdateTransformHierarchySystem",
-        .add = ecs_ids(ecs_dependson(LogicUpdatePhase))
+        .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase))
     }),
     .query.terms = {
         { .id = ecs_id(Transform3D), .src.id = EcsSelf },

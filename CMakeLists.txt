@@ -163,8 +163,20 @@ set(LUA_MODULE_SRC_FILES
     src/lua_raymath.c 
     src/lua_raygui.c
     src/lua_flecs.c
+    # src/flecs_module.c
+    # src/flecs_raylib.c
+    # src/flecs_raygui.c
+)
+
+set(FLECS_MODULE_SRC_FILES
+    # src/lua_enet.c
+    # src/lua_raylib.c 
+    # src/lua_raymath.c 
+    # src/lua_raygui.c
+    # src/lua_flecs.c
     src/flecs_module.c
     src/flecs_raylib.c
+    src/flecs_raygui.c
 )
 set(app_lua main_luajit)
 # MAIN
@@ -183,6 +195,7 @@ add_executable(${app_lua}
 
 target_compile_definitions(${app_lua} PUBLIC
   # -DENET_IMPLEMENTATION
+  -DRAYGUI_IMPLEMENTATION
   -D_CRT_SECURE_NO_WARNINGS
 )
 
@@ -277,12 +290,13 @@ add_custom_command(TARGET ${app_lua} POST_BUILD
 #================================================
 add_executable(main_flecs_module
   src/main_flecs_module.c
-  ${LUA_MODULE_SRC_FILES}
+  ${FLECS_MODULE_SRC_FILES}
 )
 
-# target_compile_definitions(main_flecs_module PUBLIC
-#   -DENET_IMPLEMENTATION
-# )
+target_compile_definitions(main_flecs_module PUBLIC
+# -DENET_IMPLEMENTATION
+  -DRAYGUI_IMPLEMENTATION
+)
 
 target_link_libraries(main_flecs_module PRIVATE
     raylib

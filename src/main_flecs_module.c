@@ -7,6 +7,7 @@
 //#include "flecs.h"
 #include "flecs_module.h"
 #include "flecs_raylib.h"
+#include "flecs_raygui.h"
 
 // Custom logging function
 void CustomLog(int msgType, const char *text, va_list args){
@@ -225,17 +226,18 @@ int main() {
   bool isRunning = false;
   flecs_module_init(world);
   flecs_raylib_module_init(world);
+  flecs_raygui_module_init(world);
 
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "setup_world_scene", 
-        .add = ecs_ids(ecs_dependson(OnSetupWorldPhase)) 
+        .add = ecs_ids(ecs_dependson(GlobalPhases.OnSetupWorldPhase)) 
     }),
     .callback = setup_world_scene
   });
 
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "user_input_system", .add = ecs_ids(ecs_dependson(LogicUpdatePhase)) }),
+    .entity = ecs_entity(world, { .name = "user_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
     .query.terms = {
       { .id = ecs_id(Transform3D), .src.id = EcsSelf },
       //{ .id = ecs_id(ModelComponent), .src.id = EcsSelf }
@@ -244,7 +246,7 @@ int main() {
   });
 
   ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_hud_render2d_system", .add = ecs_ids(ecs_dependson(Render2DPhase)) }),
+    .entity = ecs_entity(world, { .name = "rl_hud_render2d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
     .query.terms = {
         { .id = ecs_id(Transform3D), .src.id = EcsSelf },
         { .id = ecs_id(ModelComponent), .src.id = EcsSelf }

@@ -1,9 +1,9 @@
 // #define _CRT_SECURE_NO_WARNINGS
 
 #include <raylib.h>
-#define RAYGUI_IMPLEMENTATION
+// #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
-#undef RAYGUI_IMPLEMENTATION
+// #undef RAYGUI_IMPLEMENTATION
 #include "lua_utils.h"
 
 #define MAX_TEXT_LENGTH 256
