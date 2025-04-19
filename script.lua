@@ -34,8 +34,8 @@ while not rl.WindowShouldClose() do
 --     rl.DrawPoly({600, 300}, 6, 50, angle, rl.PURPLE)
 
 --     -- Instructions
---     rl.DrawText("Testing rshapes module", 10, 10, 20, rl.BLACK)
---     rl.DrawText("Press Q to quit", 10, 30, 20, rl.GRAY)
+    rl.DrawText("Testing rshapes module", 10, 10, 20, rl.BLACK)
+    rl.DrawText("Press Q to quit", 10, 30, 20, rl.GRAY)
 
     rl.EndDrawing()
 

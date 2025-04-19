@@ -166,9 +166,9 @@ set(LUA_MODULE_SRC_FILES
     src/flecs_module.c
     src/flecs_raylib.c
 )
-
+set(app_lua main_luajit)
 # MAIN
-add_executable(${PROJECT_NAME} 
+add_executable(${app_lua} 
     # src/main.c
     # src/raylib_collision.c
     # src/raylib_collision_fps.c
@@ -181,25 +181,25 @@ add_executable(${PROJECT_NAME}
     ${LUA_MODULE_SRC_FILES}
 )
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC
+target_compile_definitions(${app_lua} PUBLIC
   # -DENET_IMPLEMENTATION
   -D_CRT_SECURE_NO_WARNINGS
 )
 
 if(TARGET luajit_build)
-    add_dependencies(${PROJECT_NAME} luajit_build)
+    add_dependencies(${app_lua} luajit_build)
 endif()
 if(TARGET raylib_cache)
-    add_dependencies(${PROJECT_NAME} raylib_cache)
+    add_dependencies(${app_lua} raylib_cache)
 endif()
 if(TARGET flecs_cache)
-    add_dependencies(${PROJECT_NAME} flecs_cache)
+    add_dependencies(${app_lua} flecs_cache)
 endif()
 if(TARGET mimalloc_cache)
-    add_dependencies(${PROJECT_NAME} mimalloc_cache)
+    add_dependencies(${app_lua} mimalloc_cache)
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${app_lua} PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${raylib_SOURCE_DIR}/src
     ${luajit_SOURCE_DIR}/src
@@ -210,7 +210,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${raylib_nuklear_SOURCE_DIR}/include
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${app_lua} PRIVATE
     raylib
     flecs
     luajit
@@ -221,26 +221,26 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32 winmm)
+    target_link_libraries(${app_lua} PRIVATE ws2_32 winmm)
 endif()
 
 # Copy DLLs to output directory
 set(RAYLIB_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/raylib.dll")
 if(NOT EXISTS ${RAYLIB_DLL_DEST})
-  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+  add_custom_command(TARGET ${app_lua} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           "${RAYLIB_DLL}"
-          "$<TARGET_FILE_DIR:${PROJECT_NAME}>/raylib.dll"
+          "$<TARGET_FILE_DIR:${app_lua}>/raylib.dll"
       COMMENT "Copying raylib.dll to output directory"
   )
 endif()
 
 set(LUAJIT_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/lua51.dll")
 if(NOT EXISTS ${LUAJIT_DLL_DEST})
-  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+  add_custom_command(TARGET ${app_lua} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           "${LUAJIT_DLL}"
-          "$<TARGET_FILE_DIR:${PROJECT_NAME}>/lua51.dll"
+          "$<TARGET_FILE_DIR:${app_lua}>/lua51.dll"
       COMMENT "Copying lua51.dll to output directory"
   )
 endif()
@@ -249,30 +249,68 @@ set(FLECS_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/flecs.dll")
 message(STATUS "FLECS_DLL_DEST >>> ${FLECS_DLL_DEST}")
 if(NOT EXISTS ${FLECS_DLL_DEST})
   message(STATUS "NOT FOUND FLECS>>>>>>>>")
-  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+  add_custom_command(TARGET ${app_lua} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           "${FLECS_DLL}"
-          "$<TARGET_FILE_DIR:${PROJECT_NAME}>/flecs.dll"
+          "$<TARGET_FILE_DIR:${app_lua}>/flecs.dll"
       COMMENT "Copying flecs.dll to output directory"
   )
 endif()
 
 set(MIMALLOC_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/mimalloc-debug.dll")
 if(NOT EXISTS "${MIMALLOC_DLL_DEST}")
-  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+  add_custom_command(TARGET ${app_lua} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           "${MIMALLOC_DLL}"
-          "$<TARGET_FILE_DIR:${PROJECT_NAME}>/mimalloc-debug.dll"  # Updated to match cached name
+          "$<TARGET_FILE_DIR:${app_lua}>/mimalloc-debug.dll"  # Updated to match cached name
       COMMENT "Copying mimalloc-debug.dll to output directory"
   )
 endif()
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+add_custom_command(TARGET ${app_lua} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_SOURCE_DIR}/script.lua"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/script.lua"
+        "$<TARGET_FILE_DIR:${app_lua}>/script.lua"
     COMMENT "Copying script.lua to output directory"
 )
+
+#================================================
+add_executable(main_flecs_module
+  src/main_flecs_module.c
+  ${LUA_MODULE_SRC_FILES}
+)
+
+# target_compile_definitions(main_flecs_module PUBLIC
+#   -DENET_IMPLEMENTATION
+# )
+
+target_link_libraries(main_flecs_module PRIVATE
+    raylib
+    flecs
+    luajit
+    # mimalloc
+    mimalloc-static # working
+)
+
+target_include_directories(main_flecs_module PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${raylib_SOURCE_DIR}/src
+    ${luajit_SOURCE_DIR}/src
+    ${raygui_SOURCE_DIR}/src
+    ${enet_SOURCE_DIR}/include
+    ${flecs_SOURCE_DIR}/include
+    ${mimalloc_SOURCE_DIR}/include
+    ${raylib_nuklear_SOURCE_DIR}/include
+)
+
+if(WIN32)
+    target_link_libraries(main_flecs_module PRIVATE
+        ws2_32
+        winmm
+    )
+endif()
+
+
 
 # set(BUILD_ALL_EXAMPLES OFF CACHE BOOL "Build all examples")
 
@@ -288,6 +326,7 @@ set(examples
   # src/raylib_collision.c
   # src/main_flecs_module.c
   src/test.c
+  # src/raylib_transform3d.c
   # src/raylib3d_flecs_transform_hierarchy06.c
   # src/flecs_test.c
 )

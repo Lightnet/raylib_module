@@ -122,3 +122,9 @@ void user_input_system(ecs_iter_t *it){
 }
 ```
   Althought it required to update the changes else it will not update the change of the parent to child nodes.
+
+# GUI:
+ None
+
+# References:
+ * 
