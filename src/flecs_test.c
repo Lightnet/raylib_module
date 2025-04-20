@@ -23,20 +23,34 @@ int main(){
     // true
     ecs_print(1,"ecs_lookup Parent found");
   }
-  //nope
+  //nope //not correct// this look for child name not parent
+  if (parent == ecs_lookup(world, "Parent.Child")) {
+    ecs_print(1,"ecs_lookup found parent");
+  }
+
+  // true
+  if (child == ecs_lookup_from(world, parent, "Child")) {
+    ecs_print(1,"ecs_lookup_from found Child");
+  }
+  // nope //not correct but check for compare
   if (parent == ecs_lookup_from(world, parent, "Child")) {
     ecs_print(1,"ecs_lookup_from found");
   }
-  //nope
-  if (parent == ecs_lookup(world, "Parent.Child")) {
-    ecs_print(1,"ecs_lookup found");
+  
+  //true
+  if (child == ecs_lookup(world, "Parent.Child")) {
+    ecs_print(1,"ecs_lookup found . child");
   }
-
+  //nope
+  if (child == ecs_lookup(world, "Parent::Child")) {
+    ecs_print(1,"ecs_lookup found :: child");
+  }
+  //working
   const char *nameparent = ecs_get_name(world, parent);
   ecs_print(1,"NAME: %s", nameparent); // Parent
 
   ecs_entity_t l_parent = ecs_get_parent(world, child);
-  if(l_parent){
+  if(l_parent){//check remove pair test
     const char *nameparent02 = ecs_get_name(world, l_parent);
     ecs_print(1,"get parent NAME: %s", nameparent02); // Parent
   }

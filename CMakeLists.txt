@@ -324,8 +324,6 @@ if(WIN32)
     )
 endif()
 
-
-
 # set(BUILD_ALL_EXAMPLES OFF CACHE BOOL "Build all examples")
 
 # #set(BUILD_ALL_EXAMPLES OFF)
@@ -339,10 +337,11 @@ set(examples
   # src/raylib_collision_fps.c
   # src/raylib_collision.c
   # src/main_flecs_module.c
-  src/test.c
+  # src/test.c
   # src/raylib_transform3d.c
   # src/raylib3d_flecs_transform_hierarchy06.c
-  # src/flecs_test.c
+  src/flecs_test.c
+  src/raylib_capture_input_camera.c
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
@@ -398,3 +397,4 @@ foreach(example_source ${examples})
         endif()
     endif()
 endforeach()
+

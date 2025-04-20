@@ -65,37 +65,48 @@ ECS_COMPONENT_DECLARE(Transform3D);
 
   It would use worldMatrix to set position, rotate, scale for raylib model to render correctly.
 
-# Parent
+# Parent and Child Relationships:
+ * https://www.flecs.dev/flecs/md_docs_2Relationships.html
+  
+  The reason for Transform hierarchy in parent and child is relate how flecs format for query and loop to handle matrix and children. As well it handle model parent child to update their position correctly.
+
+  Flecs has two basic relationships and pairing. Flecs as two or more ways. One way using the flecs default relationships pairing. The other is customize pairing entity. But be working on parent and child entity pairing.
+
+## Method 1
+```c
+// Create two entities with a parent/child name
+ecs_entity_t parent = ecs_entity(world, {
+  .name = "Parent"
+});
+ 
+ecs_entity_t child = ecs_entity(world, {
+  .name = "Child"
+});
+ 
+// Create the hierarchy
+ecs_add_pair(world, child, EcsChildOf, parent);
+```
+
+```c
+ecs_remove_pair(world, child, EcsChildOf, parent);
+```
+  By using the default EcsChildOf which help reduce adding custem entity to add and remove pairs.
+
+## Transform hierarchy update:
+  There will be bool isDirty for update matrix when first time init else it position zero by default. For parent it need set isDirty true to update the world matrix. It to reduce recalculated if the entity stay same position if not move to prevent recalculated matrix branching node children update matrix.
+
+## Method 2
 ```c
   ecs_entity_t cube = ecs_entity(it->world, {
     .name = "Cube"
   });
-  ecs_set(it->world, cube, Transform3D, {
-    .position = (Vector3){0.0f, 2.0f, 0.0f},
-    .rotation = QuaternionIdentity(),
-    .scale = (Vector3){1.0f, 1.0f, 1.0f},
-    .localMatrix = MatrixIdentity(),
-    .worldMatrix = MatrixIdentity(),
-    .isDirty = true //trigger update once
-  });
-```
-# Child
-```c
+
   ecs_entity_t node2 = ecs_entity(it->world, {
     .name = "NodeChild",
-    .parent = cube // parent and attach
-  });
-  ecs_set(it->world, node2, Transform3D, {
-      .position = (Vector3){2.0f, 0.0f, 0.0f},
-      .rotation = QuaternionIdentity(),
-      .scale = (Vector3){0.5f, 0.5f, 0.5f},
-      .localMatrix = MatrixIdentity(),
-      .worldMatrix = MatrixIdentity()
+    .parent = cube // parent
   });
 ```
-  For reason added bool isDirty is to do once check update math to reduce recalculated and load if entity need update to not lag that been recalculated already.
 
-  For parent it need set isDirty true to update the world matrix else it would be default to zero position.
 
 # inputs:
 

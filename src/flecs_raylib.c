@@ -173,6 +173,7 @@ void rl_setup_system(ecs_iter_t *it){
   // SetTraceLogCallback(CustomLog);
 
   InitWindow(rl_ctx->width, rl_ctx->height, "main flecs");
+  SetExitKey(KEY_NULL);  // Set no key to close window automatically
   SetTargetFPS(60);
 }
 
@@ -182,6 +183,9 @@ void rl_input_system(ecs_iter_t *it){
   ECS_RL_INPUT_T *input = ecs_singleton_ensure(it->world, ECS_RL_INPUT_T);
   if(!input)return;
   //rl_ctx->shouldQuit = WindowShouldClose();
+  // rl_ctx->shouldQuit = IsWindowCloseRequested();//nope
+  // IsWindowState(FLAG_WINDOW_HIDPI)
+
   if(WindowShouldClose() == true && rl_ctx->isShutDown == false){
     rl_ctx->isShutDown = true;
     ecs_print(1,"RAYLIB WINDOW CLOSE!");
@@ -190,6 +194,7 @@ void rl_input_system(ecs_iter_t *it){
       .entity = ShutDownModule
     });
   }
+
   int key = GetKeyPressed();
   // ecs_print(1,"PRESS %d", key);
   if(IsKeyPressed(key)){
@@ -413,8 +418,6 @@ void rl_register_systems(ecs_world_t *world){
   });
 
   // LogicUpdatePhase
-
-
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, {
         .name = "UpdateTransformHierarchySystem",
@@ -450,14 +453,19 @@ void flecs_raylib_module_init(ecs_world_t *world){
     .isShutDown=false,
     .camera = camera,
     .isCameraValid = true,
-    .isLoaded = false
+    .isLoaded = false,
+    .isCaptureMouse = false,
   });
 
   ecs_singleton_set(world, ECS_RL_INPUT_T, {0});
 
   ecs_singleton_set(world, PlayerInput_T, {
     .isMovementMode=true,
-    .tabPressed=false
+    .tabPressed=false,
+    .yaw=0.0f,
+    .pitch=0.0f,
+    .mouseSensitivity=0.005f,
+    .moveSpeed=0.1f
   });
 
 }

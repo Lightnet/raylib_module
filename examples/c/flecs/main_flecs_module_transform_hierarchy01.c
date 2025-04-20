@@ -82,7 +82,7 @@ void setup_world_scene(ecs_iter_t *it){
   // ecs_set_name(it->world, node2, "NodeChild");
   ecs_entity_t node2 = ecs_entity(it->world, {
     .name = "NodeChild",
-    // .parent = cube
+    .parent = cube
   });
   ecs_set(it->world, node2, Transform3D, {
       .position = (Vector3){2.0f, 0.0f, 0.0f},
@@ -91,7 +91,7 @@ void setup_world_scene(ecs_iter_t *it){
       .localMatrix = MatrixIdentity(),
       .worldMatrix = MatrixIdentity()
   });
-  ecs_add_pair(it->world, node2, EcsChildOf, cube);
+  // ecs_add_pair(it->world, node2, EcsChildOf, cube);
 
   Model cubeModel02 = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
   ecs_set(it->world, node2, ModelComponent, {
@@ -102,25 +102,25 @@ void setup_world_scene(ecs_iter_t *it){
 
 
 
-  // ecs_entity_t node3 = ecs_entity(it->world, {
-  //   .name = "NodeChild3",
-  //   //.parent = cube
-  // });
-  // ecs_set(it->world, node3, Transform3D, {
-  //     .position = (Vector3){2.0f, 0.0f, 0.0f},
-  //     .rotation = QuaternionIdentity(),
-  //     .scale = (Vector3){0.5f, 0.5f, 0.5f},
-  //     .localMatrix = MatrixIdentity(),
-  //     .worldMatrix = MatrixIdentity()
-  // });
-  // // ecs_add_pair(it->world, node2, EcsChildOf, cube);
+  ecs_entity_t node3 = ecs_entity(it->world, {
+    .name = "NodeChild3",
+    //.parent = cube
+  });
+  ecs_set(it->world, node3, Transform3D, {
+      .position = (Vector3){2.0f, 0.0f, 0.0f},
+      .rotation = QuaternionIdentity(),
+      .scale = (Vector3){0.5f, 0.5f, 0.5f},
+      .localMatrix = MatrixIdentity(),
+      .worldMatrix = MatrixIdentity()
+  });
+  // ecs_add_pair(it->world, node2, EcsChildOf, cube);
 
-  // Model cubeModel03 = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
-  // ecs_set(it->world, node3, ModelComponent, {
-  //   //&cube
-  //   .model=cubeModel03,
-  //   .isLoaded=true
-  // });
+  Model cubeModel03 = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+  ecs_set(it->world, node3, ModelComponent, {
+    //&cube
+    .model=cubeModel03,
+    .isLoaded=true
+  });
 
   rl_ctx->isLoaded=true;
 }
@@ -208,71 +208,6 @@ void user_input_system(ecs_iter_t *it){
   }
 }
 
-void user_capture_input_system(ecs_iter_t *it){
-  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
-  if(!rl_ctx) return;
-
-  PlayerInput_T *pi_ctx = ecs_singleton_ensure(it->world, PlayerInput_T);
-  if (!pi_ctx) return;
-
-  int key = GetKeyPressed();
-  ecs_print(1,"key press: %d", key);
-
-  if(!pi_ctx->isCaptureMouse && ( (key > 0) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT) )) {
-    HideCursor();
-    DisableCursor();  // Locks mouse to window
-    pi_ctx->isCaptureMouse = true;
-  }
-
-  if (pi_ctx->isCaptureMouse && IsKeyPressed(KEY_ESCAPE)){
-    EnableCursor();  // Release mouse
-    ShowCursor();
-    pi_ctx->isCaptureMouse = false;
-  }
-
-  if (pi_ctx->isCaptureMouse){
-
-    Vector2 mouseDelta = GetMouseDelta();  // Mouse movement [input]
-    pi_ctx->yaw -= mouseDelta.x * pi_ctx->mouseSensitivity;
-    pi_ctx->pitch -= mouseDelta.y * pi_ctx->mouseSensitivity;
-    pi_ctx->pitch = Clamp(pi_ctx->pitch, -PI/2.0f + 0.1f, PI/2.0f - 0.1f);  // Limit pitch [raymath]
-
-    // Update camera target based on yaw and pitch [raymath]
-    rl_ctx->camera.target = Vector3Add(rl_ctx->camera.position, (Vector3){
-      cosf(pi_ctx->pitch) * sinf(pi_ctx->yaw),
-      sinf(pi_ctx->pitch),
-      cosf(pi_ctx->pitch) * cosf(pi_ctx->yaw)
-    });
-  }
-
-  // Camera movement based on direction [input, raymath]
-  Vector3 forward = Vector3Normalize(Vector3Subtract(rl_ctx->camera.target, rl_ctx->camera.position));  // Forward vector [raymath]
-  Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, rl_ctx->camera.up));  // Right vector [raymath]
-  Vector3 up = rl_ctx->camera.up;  // Global up vector (0, 1, 0) [raymath]
-
-  // Forward/Backward (W/S)
-  if (IsKeyDown(KEY_W))  // Move forward [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(forward, pi_ctx->moveSpeed));  // [raymath]
-  if (IsKeyDown(KEY_S))  // Move backward [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(forward, -pi_ctx->moveSpeed)); // [raymath]
-
-  // Left/Right (A/D)
-  if (IsKeyDown(KEY_A))  // Move left [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(right, -pi_ctx->moveSpeed));  // [raymath]
-  if (IsKeyDown(KEY_D))  // Move right [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(right, pi_ctx->moveSpeed));   // [raymath]
-
-  // Up/Down (Space/Shift)
-  if (IsKeyDown(KEY_SPACE))  // Move up [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(up, pi_ctx->moveSpeed));      // [raymath]
-  if (IsKeyDown(KEY_LEFT_SHIFT))  // Move down [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(up, -pi_ctx->moveSpeed));     // [raymath]
-
-  // Update camera target after movement
-  rl_ctx->camera.target = Vector3Add(rl_ctx->camera.position, forward);
-
-}
-
 void rl_hud_render2d_system(ecs_iter_t *it){
   PlayerInput_T *pi_ctx = ecs_singleton_ensure(it->world, PlayerInput_T);
   if (!pi_ctx) return;
@@ -285,7 +220,7 @@ void rl_hud_render2d_system(ecs_iter_t *it){
   //   DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 50+20*i, 20, DARKGRAY);
   // }
   //DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 0, 20, DARKGRAY);
-  // ecs_print(1,"Entities Rendered: %d", it->count);
+  ecs_print(1,"Entities Rendered: %d", it->count);
   
 
   if(it->count == 1){
@@ -324,15 +259,6 @@ int main() {
         .add = ecs_ids(ecs_dependson(GlobalPhases.OnSetupWorldPhase)) 
     }),
     .callback = setup_world_scene
-  });
-
-  ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "user_capture_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
-    // .query.terms = {
-      // { .id = ecs_id(Transform3D), .src.id = EcsSelf },
-      //{ .id = ecs_id(ModelComponent), .src.id = EcsSelf }
-    // },
-    .callback = user_capture_input_system
   });
 
   ecs_system_init(world, &(ecs_system_desc_t){

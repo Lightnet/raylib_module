@@ -15,6 +15,7 @@ typedef struct {
   int width;
   int height;
   bool isLoaded;
+  bool isCaptureMouse;
 } RayLibContext;
 
 ECS_COMPONENT_DECLARE(RayLibContext);
@@ -73,6 +74,16 @@ ECS_COMPONENT_DECLARE(ECS_RL_INPUT_T);
 typedef struct {
   bool isMovementMode;
   bool tabPressed;
+  bool isCaptureMouse;
+  bool Left;
+  bool Right;
+  bool Up;
+  bool Down;
+  bool isJump;
+  float yaw;
+  float pitch;
+  float mouseSensitivity;
+  float moveSpeed;
 } PlayerInput_T;
 ECS_COMPONENT_DECLARE(PlayerInput_T);
 
