@@ -17,8 +17,19 @@ typedef struct {
   bool isLoaded;
   bool isCaptureMouse;
 } RayLibContext;
-
 ECS_COMPONENT_DECLARE(RayLibContext);
+
+typedef enum {
+  F_CAMERA_FREE,   // Free camera (WASD, mouse, Space/Ctrl)
+  F_CAMERA_PLAYER, // First-person player camera
+  F_CAMERA_DEBUG   // Debug camera (orbit with mouse)
+} FCameraMode;
+ECS_COMPONENT_DECLARE(FCameraMode);
+
+typedef struct {
+  FCameraMode currentMode;
+} CameraContext_T;
+ECS_COMPONENT_DECLARE(CameraContext_T);
 
 // Transform3D component
 typedef struct {

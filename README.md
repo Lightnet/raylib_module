@@ -20,7 +20,6 @@
  * [Troubleshooting](#troubleshooting)
  * [Credits](#Credits)
 
-
 ---
 # Information:
   Work in progress build.
@@ -112,6 +111,30 @@ project/
   Well working on module some degree to break apart to handle some libs to make it easy or hard depend on how to code correctly on the builds.
 
   Needed normal and module to test the correct way to handle input and collision later build tests.
+## lua:
+- [x] simple window frame test
+- [x] draw text
+
+## flecs module:
+- [ ] raylib
+    - [x] base window
+    - [ ] base model
+        - [x] clean up
+    - [ ] loading model
+    - [x] transform 3d hierarchy
+    - [ ] loading screen
+- [x] camera mode:
+    - [x] player camera
+    - [x] free camera
+    - [ ] debug
+- [x] player 
+    - [ ] Jump
+    - [ ] collision
+    - [x] movement
+    - [ ] health 
+    - [ ] damage
+- [ ] physics ?
+
 
 ## CMakeLists.txt
   Current the testing has not been config just prototyping the build.

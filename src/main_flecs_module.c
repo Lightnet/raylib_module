@@ -9,6 +9,11 @@
 #include "flecs_raylib.h"
 #include "flecs_raygui.h"
 
+Vector3 MatrixGetPosition(Matrix mat)
+{
+    return (Vector3){ mat.m12, mat.m13, mat.m14 };
+}
+
 // Custom logging function
 void CustomLog(int msgType, const char *text, va_list args){
   char timeStr[64] = { 0 };
@@ -56,12 +61,12 @@ void setup_world_scene(ecs_iter_t *it){
   // Create cube entity
   // ecs_entity_t cube = ecs_new(it->world);
   // ecs_set_name(it->world, cube, "Cube");
-  ecs_entity_t cube = ecs_entity(it->world, {
-    .name = "Cube"
+  ecs_entity_t node01 = ecs_entity(it->world, {
+    .name = "PlayerNode"
   });
 
-  ecs_set(it->world, cube, Transform3D, {
-    .position = (Vector3){0.0f, 2.0f, 0.0f},
+  ecs_set(it->world, node01, Transform3D, {
+    .position = (Vector3){0.0f, 1.0f, 0.0f},
     .rotation = QuaternionIdentity(),
     .scale = (Vector3){1.0f, 1.0f, 1.0f},
     .localMatrix = MatrixIdentity(),
@@ -71,7 +76,7 @@ void setup_world_scene(ecs_iter_t *it){
 
   // Load cube model and store in ModelComponent
   Model cubeModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
-  ecs_set(it->world, cube, ModelComponent, {
+  ecs_set(it->world, node01, ModelComponent, {
     .model=cubeModel,
     .isLoaded=true
   });
@@ -85,18 +90,19 @@ void setup_world_scene(ecs_iter_t *it){
     // .parent = cube
   });
   ecs_set(it->world, node2, Transform3D, {
-      .position = (Vector3){2.0f, 0.0f, 0.0f},
+      .position = (Vector3){0.0f, 1.0f, 0.0f},
       .rotation = QuaternionIdentity(),
       .scale = (Vector3){0.5f, 0.5f, 0.5f},
       .localMatrix = MatrixIdentity(),
       .worldMatrix = MatrixIdentity()
   });
-  ecs_add_pair(it->world, node2, EcsChildOf, cube);
+  ecs_add_pair(it->world, node2, EcsChildOf, node01);
 
   Model cubeModel02 = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
   ecs_set(it->world, node2, ModelComponent, {
     //&cube
     .model=cubeModel02,
+    // .model=cubeModel,
     .isLoaded=true
   });
 
@@ -126,67 +132,82 @@ void setup_world_scene(ecs_iter_t *it){
 }
 
 void user_input_system(ecs_iter_t *it){
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if(!rl_ctx) return;
+
   PlayerInput_T *pi_ctx = ecs_singleton_ensure(it->world, PlayerInput_T);
   if (!pi_ctx) return;
+
+  CameraContext_T *c_ctx = ecs_singleton_ensure(it->world, CameraContext_T);
+  if(!c_ctx) return;
+
+  if(c_ctx->currentMode != F_CAMERA_PLAYER) return;
 
   Transform3D *t = ecs_field(it, Transform3D, 0);
   // float dt = GetFrameTime(); it->delta_time;
   float dt = it->delta_time;
+
+  Vector2 mouseDelta = GetMouseDelta();  // Mouse movement [input]
+  pi_ctx->yaw -= mouseDelta.x * pi_ctx->mouseSensitivity;
+  pi_ctx->pitch -= mouseDelta.y * pi_ctx->mouseSensitivity;
+  pi_ctx->pitch = Clamp(pi_ctx->pitch, -PI/2.0f + 0.1f, PI/2.0f - 0.1f);  // Limit pitch [raymath]
+
+  // Update camera target based on yaw and pitch [raymath]
+  rl_ctx->camera.target = Vector3Add(rl_ctx->camera.position, (Vector3){
+    cosf(pi_ctx->pitch) * sinf(pi_ctx->yaw),
+    sinf(pi_ctx->pitch),
+    cosf(pi_ctx->pitch) * cosf(pi_ctx->yaw)
+  });
 
   //ecs_print(1,"dt %.8f", dt);
   bool isFound = false;
   for (int i = 0; i < it->count; i++) {
     const char *name = ecs_get_name(it->world, it->entities[i]);
     if (name) {
-      if (strcmp(name, "Cube") == 0) {
+      if (strcmp(name, "PlayerNode") == 0) {// parent for moving the player node
         //ecs_print(1,"Cube");
         bool wasModified = false;
-        if (IsKeyPressed(KEY_TAB)) {
-          pi_ctx->isMovementMode = !pi_ctx->isMovementMode;
-          printf("Toggled mode to: %s\n", pi_ctx->isMovementMode ? "Movement" : "Rotation");
-        }
 
-        if (pi_ctx->isMovementMode) {
-          if (IsKeyDown(KEY_W)) {
-            ecs_print(1,"Key W");
-            t[i].position.z -= 2.0f * dt;
-            wasModified = true;
-          }
-          if (IsKeyDown(KEY_S)) {t[i].position.z += 2.0f * dt;wasModified = true;}
-          if (IsKeyDown(KEY_A)) {t[i].position.x -= 2.0f * dt;wasModified = true;}
-          if (IsKeyDown(KEY_D)) {t[i].position.x += 2.0f * dt;wasModified = true;}
-        }else{
-          float rotateSpeed = 90.0f;
-          if (IsKeyDown(KEY_Q)) {
-            Quaternion rot = QuaternionFromAxisAngle((Vector3){0, 1, 0}, DEG2RAD * rotateSpeed * dt);
-            t[i].rotation = QuaternionMultiply(t[i].rotation, rot);
-            wasModified = true;
-          }
-          if (IsKeyDown(KEY_E)) {
-            Quaternion rot = QuaternionFromAxisAngle((Vector3){0, 1, 0}, -DEG2RAD * rotateSpeed * dt);
-            t[i].rotation = QuaternionMultiply(t[i].rotation, rot);
-            wasModified = true;
-          }
-          if (IsKeyDown(KEY_W)) {
-            Quaternion rot = QuaternionFromAxisAngle((Vector3){1, 0, 0}, DEG2RAD * rotateSpeed * dt);
-            t[i].rotation = QuaternionMultiply(t[i].rotation, rot);
-            wasModified = true;
-          }
-          if (IsKeyDown(KEY_S)) {
-            Quaternion rot = QuaternionFromAxisAngle((Vector3){1, 0, 0}, -DEG2RAD * rotateSpeed * dt);
-            t[i].rotation = QuaternionMultiply(t[i].rotation, rot);
-            wasModified = true;
-          }
-          if (IsKeyDown(KEY_A)) {
-            Quaternion rot = QuaternionFromAxisAngle((Vector3){0, 0, 1}, DEG2RAD * rotateSpeed * dt);
-            t[i].rotation = QuaternionMultiply(t[i].rotation, rot);
-            wasModified = true;
-          }
-          if (IsKeyDown(KEY_D)) {
-            Quaternion rot = QuaternionFromAxisAngle((Vector3){0, 0, 1}, -DEG2RAD * rotateSpeed * dt);
-            t[i].rotation = QuaternionMultiply(t[i].rotation, rot);
-            wasModified = true;
-          }
+        // Compute forward vector for camera direction
+        // Vector3 forward = {
+        //   cosf(pi_ctx->yaw) * cosf(pi_ctx->pitch),
+        //   sinf(pi_ctx->pitch),
+        //   sinf(pi_ctx->yaw) * cosf(pi_ctx->pitch)
+        // };
+
+        // Vector3 forward = {
+        //   -sinf(pi_ctx->yaw),              // X: Left/right (negative sin for Raylib’s +X right)
+        //   0,                       // Y: Grounded (as you set)
+        //   -cosf(pi_ctx->yaw)               // Z: Forward/backward (negative cos for -Z forward)
+        // };
+
+        Vector3 forward = {
+          sinf(pi_ctx->yaw),              // X: Left/right (negative sin for Raylib’s +X right)
+          0,                       // Y: Grounded (as you set)
+          cosf(pi_ctx->yaw)               // Z: Forward/backward (negative cos for -Z forward)
+        };
+
+
+        forward = Vector3Normalize(forward); // Ensure unit length
+        forward.y = 0;//ground for now.
+        Vector3 right = Vector3CrossProduct(forward, rl_ctx->camera.up);
+        
+        if (IsKeyDown(KEY_W)){
+          ecs_print(1,"forward");
+          t[i].position = Vector3Add(t[i].position, Vector3Scale(forward, pi_ctx->moveSpeed));
+          t[i].isDirty = true;
+        }
+        if (IsKeyDown(KEY_S)) {
+          t[i].position = Vector3Subtract(t[i].position, Vector3Scale(forward, pi_ctx->moveSpeed));
+          t[i].isDirty = true;
+        }
+        if (IsKeyDown(KEY_A)) {
+          t[i].position = Vector3Subtract(t[i].position, Vector3Scale(right, pi_ctx->moveSpeed));
+          t[i].isDirty = true;
+        }
+        if (IsKeyDown(KEY_D)) {
+          t[i].position = Vector3Add(t[i].position, Vector3Scale(right, pi_ctx->moveSpeed));
+          t[i].isDirty = true;
         }
 
         if (IsKeyPressed(KEY_R)) {
@@ -196,12 +217,19 @@ void user_input_system(ecs_iter_t *it){
           wasModified = true;
         }
         if (wasModified) {
+          //update matrix 3d
           t[i].isDirty = true;
-          printf("Marked %s as dirty\n", name);
+          // printf("Marked %s as dirty\n", name);
         }
-        
-        break;      
-      } else if (strcmp(name, "Floor") == 0) {
+
+      } else if (strcmp(name, "NodeChild") == 0) {//camera {0,1,0}
+        // t[i] = setTransform3DPos(t[i], t[i].position);
+        //rl_ctx->camera
+        Vector3 vecPos =  MatrixGetPosition(t[i].worldMatrix);
+        rl_ctx->camera.position = (Vector3){ vecPos.x, vecPos.y, vecPos.z };
+        //rl_ctx->camera.target = (Vector3){vecPos.x, vecPos.y, vecPos.z - 1.0f};
+        //rl_ctx->camera.target = NULL;
+      }else if (strcmp(name, "Floor") == 0) {
         // t[i] = setTransform3DPos(t[i], t[i].position);
       }
     }
@@ -215,8 +243,26 @@ void user_capture_input_system(ecs_iter_t *it){
   PlayerInput_T *pi_ctx = ecs_singleton_ensure(it->world, PlayerInput_T);
   if (!pi_ctx) return;
 
+  CameraContext_T *c_ctx = ecs_singleton_ensure(it->world, CameraContext_T);
+  if(!c_ctx) return;
+
+  if (IsKeyPressed(KEY_TAB)){
+    c_ctx->currentMode = (FCameraMode)((c_ctx->currentMode + 1) % 3); // Cycle through modes
+    switch (c_ctx->currentMode){
+      case F_CAMERA_FREE:
+        ecs_print(1,"F_CAMERA_FREE");
+        break;
+      case F_CAMERA_PLAYER:
+        ecs_print(1,"F_CAMERA_PLAYER");
+        break;
+      case F_CAMERA_DEBUG:
+        ecs_print(1,"F_CAMERA_DEBUG");
+        break;
+    }
+  }
+
   int key = GetKeyPressed();
-  ecs_print(1,"key press: %d", key);
+  // ecs_print(1,"key press: %d", key);
 
   if(!pi_ctx->isCaptureMouse && ( (key > 0) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT) )) {
     HideCursor();
@@ -229,6 +275,8 @@ void user_capture_input_system(ecs_iter_t *it){
     ShowCursor();
     pi_ctx->isCaptureMouse = false;
   }
+
+  if(c_ctx->currentMode != F_CAMERA_FREE) return;
 
   if (pi_ctx->isCaptureMouse){
 
@@ -276,6 +324,10 @@ void user_capture_input_system(ecs_iter_t *it){
 void rl_hud_render2d_system(ecs_iter_t *it){
   PlayerInput_T *pi_ctx = ecs_singleton_ensure(it->world, PlayerInput_T);
   if (!pi_ctx) return;
+
+  CameraContext_T *c_ctx = ecs_singleton_ensure(it->world, CameraContext_T);
+  if(!c_ctx) return;
+
   Transform3D *t = ecs_field(it, Transform3D, 0);
   // ecs_print(1,"hud");
 
@@ -288,20 +340,36 @@ void rl_hud_render2d_system(ecs_iter_t *it){
   // ecs_print(1,"Entities Rendered: %d", it->count);
   
 
-  if(it->count == 1){
-    for (int i = 0; i < it->count; i++) {
-      const char *name = ecs_get_name(it->world, it->entities[i]);
-      DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 50+20*i, 20, DARKGRAY);
-    }
-    DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 10+20, 20, DARKGRAY);
-  }else {
-  // if(it->count == 2){
-    for (int i = 0; i < it->count; i++) {
-      const char *name = ecs_get_name(it->world, it->entities[i]);
-      DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 90+20*i, 20, DARKGRAY);
-    }
-    DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 50+20*1, 20, DARKGRAY);
+  // if(it->count == 1){
+  //   for (int i = 0; i < it->count; i++) {
+  //     const char *name = ecs_get_name(it->world, it->entities[i]);
+  //     DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 50+20*i, 20, DARKGRAY);
+  //   }
+  //   DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 10+20, 20, DARKGRAY);
+  // }else {
+  // // if(it->count == 2){
+  //   for (int i = 0; i < it->count; i++) {
+  //     const char *name = ecs_get_name(it->world, it->entities[i]);
+  //     DrawText(TextFormat("Name: %s, idx: %d, x: %0.4f, y: %0.4f, z: %0.4f", name, i, t[i].position.x, t[i].position.y, t[i].position.z ), 10, 90+20*i, 20, DARKGRAY);
+  //   }
+  //   DrawText(TextFormat("Entities Rendered: %d", it->count), 10, 50+20*1, 20, DARKGRAY);
+  // }
+
+  switch (c_ctx->currentMode){
+    case F_CAMERA_FREE:
+      // ecs_print(1,"F_CAMERA_FREE");
+      DrawText(TextFormat("Camera Mode: F_CAMERA_FREE"), 10, 30, 20, DARKGRAY);
+      break;
+    case F_CAMERA_PLAYER:
+      // ecs_print(1,"F_CAMERA_PLAYER");
+      DrawText(TextFormat("Camera Mode: F_CAMERA_PLAYER"), 10, 30, 20, DARKGRAY);
+      break;
+    case F_CAMERA_DEBUG:
+      // ecs_print(1,"F_CAMERA_DEBUG");
+      DrawText(TextFormat("Camera Mode: F_CAMERA_DEBUG"), 10, 30, 20, DARKGRAY);
+      break;
   }
+
 
   DrawText(TextFormat("Toggled mode to: %s\n", pi_ctx->isMovementMode ? "Movement" : "Rotation"), 10, 10, 20, DARKGRAY);
 }

@@ -33,13 +33,13 @@ void UpdateTransform(ecs_world_t *world, ecs_entity_t entity, Transform3D *trans
   if (!parent || !ecs_is_valid(world, parent)) {
       // Root entity: world matrix = local matrix
       transform->worldMatrix = transform->localMatrix;
-      printf("Root %s position (%.2f, %.2f, %.2f)\n", name, transform->position.x, transform->position.y, transform->position.z);
+      // printf("Root %s position (%.2f, %.2f, %.2f)\n", name, transform->position.x, transform->position.y, transform->position.z);
   } else {
       // Child entity: world matrix = local matrix * parent world matrix
       const Transform3D *parent_transform = ecs_get(world, parent, Transform3D);
       if (!parent_transform) {
-          printf("Error: Parent %s lacks Transform3D for %s\n",
-                 ecs_get_name(world, parent) ? ecs_get_name(world, parent) : "(unnamed)", name);
+          // printf("Error: Parent %s lacks Transform3D for %s\n",
+          //        ecs_get_name(world, parent) ? ecs_get_name(world, parent) : "(unnamed)", name);
           transform->worldMatrix = transform->localMatrix;
           return;
       }
@@ -49,9 +49,9 @@ void UpdateTransform(ecs_world_t *world, ecs_entity_t entity, Transform3D *trans
       float py = parent_transform->worldMatrix.m13;
       float pz = parent_transform->worldMatrix.m14;
       if (fabs(px) > 1e6 || fabs(py) > 1e6 || fabs(pz) > 1e6) {
-          printf("Error: Invalid parent %s world pos (%.2f, %.2f, %.2f) for %s\n",
-                 ecs_get_name(world, parent) ? ecs_get_name(world, parent) : "(unnamed)",
-                 px, py, pz, name);
+          // printf("Error: Invalid parent %s world pos (%.2f, %.2f, %.2f) for %s\n",
+          //        ecs_get_name(world, parent) ? ecs_get_name(world, parent) : "(unnamed)",
+          //        px, py, pz, name);
           transform->worldMatrix = transform->localMatrix;
           return;
       }
@@ -66,11 +66,11 @@ void UpdateTransform(ecs_world_t *world, ecs_entity_t entity, Transform3D *trans
 
       // Debug output
       const char *parent_name = ecs_get_name(world, parent) ? ecs_get_name(world, parent) : "(unnamed)";
-      printf("Child %s (ID: %llu), parent %s (ID: %llu)\n",
-             name, (unsigned long long)entity, parent_name, (unsigned long long)parent);
-      printf("Child %s position (%.2f, %.2f, %.2f), parent %s world pos (%.2f, %.2f, %.2f), world pos (%.2f, %.2f, %.2f)\n",
-             name, transform->position.x, transform->position.y, transform->position.z,
-             parent_name, px, py, pz, wx, wy, wz);
+      // printf("Child %s (ID: %llu), parent %s (ID: %llu)\n",
+      //        name, (unsigned long long)entity, parent_name, (unsigned long long)parent);
+      // printf("Child %s position (%.2f, %.2f, %.2f), parent %s world pos (%.2f, %.2f, %.2f), world pos (%.2f, %.2f, %.2f)\n",
+      //        name, transform->position.x, transform->position.y, transform->position.z,
+      //        parent_name, px, py, pz, wx, wy, wz);
   }
 
   // Mark children as dirty to ensure they update in the next frame
@@ -346,6 +346,7 @@ void rl_register_components(ecs_world_t *world){
   ECS_COMPONENT_DEFINE(world, RayLibContext);
   ECS_COMPONENT_DEFINE(world, PHComponent);
   ECS_COMPONENT_DEFINE(world, PlayerInput_T);
+  ECS_COMPONENT_DEFINE(world, CameraContext_T);
 
 }
 
@@ -466,6 +467,10 @@ void flecs_raylib_module_init(ecs_world_t *world){
     .pitch=0.0f,
     .mouseSensitivity=0.005f,
     .moveSpeed=0.1f
+  });
+
+  ecs_singleton_set(world, CameraContext_T, {
+    .currentMode = F_CAMERA_PLAYER
   });
 
 }

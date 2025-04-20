@@ -341,7 +341,8 @@ set(examples
   # src/raylib_transform3d.c
   # src/raylib3d_flecs_transform_hierarchy06.c
   src/flecs_test.c
-  src/raylib_capture_input_camera.c
+  # src/raylib_capture_input_camera.c
+  examples/c/raylib/raylib_toggle_camera_mode01.c
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
