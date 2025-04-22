@@ -201,41 +201,35 @@ void mathEval(const char* args){
 
 void console_handler(const char* command){
 
-  char* command_buff = (char*)malloc(strlen(command) + 1);
-  strcpy(command_buff, command);
-  command_buff[strlen(command)] = '\0';
+  // char* command_buff = (char*)malloc(strlen(command) + 1);
+  // strcpy(command_buff, command);
+  // command_buff[strlen(command)] = '\0';
 
-  char* token = strtok(command_buff, " ");
+  // char* token = strtok(command_buff, " ");
 
-  char* message_buff = (char*)malloc(strlen(command) + 1);
-  strcpy(message_buff, command);
-  message_buff[strlen(command)] = '\0';
+  // char* message_buff = (char*)malloc(strlen(command) + 1);
+  // strcpy(message_buff, command);
+  // message_buff[strlen(command)] = '\0';
 
-  char* message = strstr(message_buff, token) + strlen(token);
-  while (*message == ' ') { message++; }
+  // char* message = strstr(message_buff, token) + strlen(token);
+  // while (*message == ' ') { message++; }
 
-  if (!DK_ExtCommandExecute(token, message)) {
-    CustomLog(LOG_ERROR, TextFormat("Unknown command `%s`", command), NULL);
-  }
+  // if (!DK_ExtCommandExecute(token, message)) {
+  //   CustomLog(LOG_ERROR, TextFormat("Unknown command `%s`", command), NULL);
+  // }
 
-  free(command_buff);
-  free(message_buff);
+  // free(command_buff);
+  // free(message_buff);
 }
 
 void flecs_dk_console_setup_system(ecs_iter_t *it) {
   ecs_print(1, "flecs_dk_console_setup_system");
 
-  // Initialize console
   console_global_ptr = &console;
   DK_ConsoleInit(console_global_ptr, LOG_SIZE);
 
-  // Initialize ImUI
-  ImUI imui;
-  imui.theme = &DK_ImUISolarizedTheme;
-  imui.style = &DK_ImUIDefaultStyle;
-
-  // Load font (persist it in DKConsoleContext)
-  Font customFont;
+  // Static font to persist
+  static Font customFont;
   const char* fontPath = "resources/font/Kenney Pixel.ttf";
   customFont = LoadFont(fontPath);
   if (customFont.texture.id == 0) {
@@ -243,15 +237,23 @@ void flecs_dk_console_setup_system(ecs_iter_t *it) {
     customFont = GetFontDefault();
   }
   SetTextureFilter(customFont.texture, TEXTURE_FILTER_BILINEAR);
-  imui.font = &customFont; // Temporary assignment for initialization
+  ecs_print(1, "Font texture ID: %u", customFont.texture.id);
 
-  // Store in singleton (including the font to keep it alive)
   ecs_singleton_set(it->world, DKConsoleContext, {
-    .imui = imui,
+    .imui = {
+      .theme = &DK_ImUISolarizedTheme,
+      .style = &DK_ImUIDefaultStyle,
+      .font = &customFont, // Points to static font
+    },
     .console = console_global_ptr,
-    .font = customFont, // Store font separately to manage lifetime
+    // .font = customFont, // Store font object
     .isLoaded = true,
   });
+
+  // Update imui.font to point to the stored font
+  //DKConsoleContext *dc_ctx = ecs_singleton_get(it->world, DKConsoleContext);
+  //dc_ctx->imui.font = &dc_ctx->font; // Ensure imui.font points to the valid font
+
 
   //DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
   //dc_ctx->imui.font = &dc_ctx->font; // Ensure imui.font points to the valid font
@@ -267,9 +269,9 @@ void render2d_dk_console_system(ecs_iter_t *it){
 
   const char *text = "Press TAB to toggle the console";
   Vector2 position = { 20.0f, 20.0f };
-  // DrawTextEx(*dc_ctx->imui.font, text, position, 20.0f, 1.0f, GRAY);
-  DrawTextEx(dc_ctx->font, text, position, 20.0f, 1.0f, GRAY);//working
-  dc_ctx->imui.font = &dc_ctx->font;
+  DrawTextEx(*dc_ctx->imui.font, text, position, 20.0f, 1.0f, GRAY);
+  // DrawTextEx(dc_ctx->font, text, position, 20.0f, 1.0f, GRAY);//working
+  // dc_ctx->imui.font = &dc_ctx->font;
   
   // Update console (pass the stored ImUI and console)
   DK_ConsoleUpdate(dc_ctx->console, &dc_ctx->imui, console_handler);
