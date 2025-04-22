@@ -15,6 +15,11 @@
     "flecs_raylib.h": "c",
     "flecs_module.h": "c",
     "flecs_raygui.h": "c",
-    "thread": "c"
+    "thread": "c",
+    "flecs_dk_console.h": "c",
+    "dk_command.h": "c",
+    "dk_console.h": "c",
+    "ctype.h": "c",
+    "assert.h": "c"
   }
 }

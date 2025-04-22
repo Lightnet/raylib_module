@@ -1,23 +1,16 @@
-//
-// https://github.com/dkvilo/dk_console
-// Author: David Kviloria
-// ClangFormat: Mozilla
-//
-#include "raylib.h"
-#include "raymath.h"
-#include <string.h>
-#include <time.h>
-#include <assert.h>
-#include <ctype.h>
+// 
+// base on dk_console
+// 
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>                   // Required for: time_t, tm, time(), localtime(), strftime()
+#include <assert.h>
+#include <ctype.h> // isdigit
+#include <stdarg.h>
+#include <string.h>
 
-#ifdef _WIN32
-#define popen _popen
-#define pclose _pclose
-#endif
-
-// #define DK_CONSOLE_IMPLEMENTATION
-#include "dk_console.h"
+#include "flecs_dk_console.h"
 
 #define DK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
 #include "dk_command.h"
@@ -115,11 +108,13 @@ void CustomLog(int msgType, const char* text, va_list args){
   struct tm* tm_info = localtime(&now);
 
   strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
-  vsprintf(buffer, text, args);
+  //vsprintf(buffer, text, args);
+  vsprintf_s(buffer, sizeof(buffer), text, args);
 
   char* finalBuffer = (char*)malloc(1024);
   memset(finalBuffer, 0, 1024);
-  sprintf(finalBuffer, "%s %s", timeStr, buffer);
+  // sprintf(finalBuffer, "%s %s", timeStr, buffer);
+  sprintf_s(finalBuffer, sizeof(finalBuffer), "%s %s", timeStr, buffer);
 
   const char* msgTypeStr = "Unknown";
   switch (msgType) {
@@ -142,7 +137,8 @@ void CustomLog(int msgType, const char* text, va_list args){
 
   char* finalBuffer2 = (char*)malloc(1024);
   memset(finalBuffer2, 0, 1024);
-  sprintf(finalBuffer2, "%s %s", msgTypeStr, finalBuffer);
+  //sprintf(finalBuffer2, "%s %s", msgTypeStr, finalBuffer);
+  sprintf_s(finalBuffer2, sizeof(finalBuffer2), "%s %s", msgTypeStr, finalBuffer);
 
   free(finalBuffer);
 
@@ -203,25 +199,6 @@ void mathEval(const char* args){
   CustomLog(LOG_INFO, TextFormat("Eval(%s) = %f", args, result), NULL);
 }
 
-#if !defined(PLATFORM_WEB)
-void shell(const char* args)
-{
-  FILE *fp;
-  char path[1035];
-
-  fp = popen(args, "r");
-  if (fp == NULL) {
-    CustomLog(LOG_ERROR, "Sh: Failed to execute command", NULL);
-  }
-
-  while (fgets(path, sizeof(path), fp) != NULL) {
-    CustomLog(LOG_INFO, path, NULL);
-  }
-
-  pclose(fp);
-}
-#endif
-
 void console_handler(const char* command){
 
   char* command_buff = (char*)malloc(strlen(command) + 1);
@@ -245,79 +222,89 @@ void console_handler(const char* command){
   free(message_buff);
 }
 
-int main(void){
+void flecs_dk_console_setup_system(ecs_iter_t *it){
+  ecs_print(1,"flecs_dk_console_setup_system");
+  // SetTraceLogCallback(CustomLog);
+  // DK_ExtCommandInit();
+  //DK_ExtCommandPush("echo", 1, "Prints a provided message in the console `echo Hello World`", &echo);
 
-  SetTraceLogCallback(CustomLog);
-
-  DK_ExtCommandInit();
-  DK_ExtCommandPush("echo", 1, "Prints a provided message in the console `echo Hello World`", &echo);
-  DK_ExtCommandPush("clear", 0, "Clears the console buffer", &clear);
-  DK_ExtCommandPush("help", 1, "Shows the available commands and/or specific one `help <command_name>`", &help);
-  DK_ExtCommandPush("calc", -1, "Evaluates a mathematical expression `calc 2 2 +`", &mathEval);
-#if !defined(PLATFORM_WEB)
-  DK_ExtCommandPush("sh", 1, "Executes a shell command `sh ls -la`", &shell);
-#endif
-
-  static ImUI imui;
+  ImUI imui;
   imui.theme = &DK_ImUISolarizedTheme;
   imui.style = &DK_ImUIDefaultStyle;
 
-  const int screenWidth = 1280;
-  const int screenHeight = 720;
-
-  console_global_ptr = &console;
-
+  console_global_ptr=&console;
   DK_ConsoleInit(console_global_ptr, LOG_SIZE);
-  InitWindow(screenWidth, screenHeight, "Dev Console");
 
-  SetTargetFPS(60);
+  // Font customFont = LoadFont("resources/font/Kenney Pixel.ttf"); // Replace with actual path
+  // if (customFont.texture.id == 0) {
+  //   // Font failed to load
+  //   TraceLog(LOG_ERROR, "Failed to load font!");
+  //   // Optionally, fall back to default font
+  //   customFont = GetFontDefault();
+  // }
+  // imui.font = &customFont; // Set the font pointer
+  Font customFont = GetFontDefault();
+  imui.font = &customFont;
 
-  //rework to raylib 5.5 update
-
-  // unsigned int fileSize = 0;
-  // //unsigned char* fileData = LoadFileData("", &fileSize);
-  // unsigned char* fileData = LoadFileData("Kenney-Pixel.ttf", &fileSize);
-  // // int fontSize = 128;
-  // int fontSize = 128;
-
-  // imui.font = (Font*)malloc(sizeof(Font));
-  // imui.font->baseSize = fontSize;
-  // imui.font->glyphCount = 95;
-
-  // imui.font->glyphs = LoadFontData(fileData, fileSize, fontSize, 0, 0, FONT_SDF);
-
-  // Image atlas = GenImageFontAtlas(imui.font->glyphs, &imui.font->recs, imui.font->glyphCount, fontSize, 0, 1);
-  // imui.font->texture = LoadTextureFromImage(atlas);
-
-  //Font customFont = LoadFont("Kenney-Pixel.ttf"); // Replace with actual path
-  Font customFont = LoadFont("resources/font/Kenney Pixel.ttf"); // Replace with actual path
-  if (customFont.texture.id == 0) {
-    // Font failed to load
-    TraceLog(LOG_ERROR, "Failed to load font!");
-    // Optionally, fall back to default font
-    customFont = GetFontDefault();
-  }
-  imui.font = &customFont; // Set the font pointer
   // UnloadFont(customFont);
   // UnloadImage(atlas);
   // UnloadFileData(fileData);
   SetTextureFilter(imui.font->texture, TEXTURE_FILTER_BILINEAR);
 
-  while (!WindowShouldClose()) {
-    BeginDrawing();
-    ClearBackground(Fade(BLACK, 0.5f));
+  ecs_singleton_set(it->world, DKConsoleContext, {
+    .imui=imui,
+    .console=console_global_ptr,
+    .isLoaded=true,
+  });
 
-    const char *text = "Press TAB to toggle the console";
-    Vector2 position = { 20.0f, 20.0f };
-    DrawTextEx(*imui.font, text, position, 20.0f, 1.0f, GRAY);
+}
 
-    DK_ConsoleUpdate(console_global_ptr, &imui, console_handler);
-    EndDrawing();
-  }
+void render2d_dk_console_system(ecs_iter_t *it){
+  // ecs_print(1,"render2d dk_console");
+  DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  if (!dc_ctx || !dc_ctx->isLoaded) return;
+  //DKConsoleContext
+  // ecs_print(1,"render2d dk_console");
 
-  DK_ConsoleShutdown(console_global_ptr, LOG_SIZE);
-  UnloadFont(customFont);
-  CloseWindow();
+  const char *text = "Press TAB to toggle the console";
+  Vector2 position = { 20.0f, 20.0f };
+  DrawTextEx(*dc_ctx->imui.font, text, position, 20.0f, 1.0f, GRAY);
+  // DK_ConsoleUpdate(dc_ctx->console, &dc_ctx->imui, console_handler);
 
-  return 0;
+  // DrawTextEx(*imui.font, text, position, 20.0f, 1.0f, GRAY);
+  // DK_ConsoleUpdate(console_global_ptr, &imui, console_handler);
+}
+
+void dk_console_register_components(ecs_world_t *world){
+  // 
+  ECS_COMPONENT_DEFINE(world, DKConsoleContext);
+  
+}
+
+void dk_console_register_systems(ecs_world_t *world){
+
+  ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { 
+        .name = "flecs_dk_console_setup_system", 
+        .add = ecs_ids(ecs_dependson(GlobalPhases.OnSetupModulePhase)) 
+    }),
+    .callback = flecs_dk_console_setup_system
+  });
+
+  ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { 
+        .name = "render2d_dk_console_system", 
+        .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D3Phase)) 
+    }),
+    .callback = render2d_dk_console_system
+  });
+
+}
+
+void flecs_dk_console_module_init(ecs_world_t *world){
+
+  dk_console_register_components(world);
+
+  dk_console_register_systems(world);
+
 }

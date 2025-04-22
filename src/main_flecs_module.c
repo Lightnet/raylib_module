@@ -5,9 +5,13 @@
 // #include "raymath.h" // For quaternion and matrix operations
 // #include "rlgl.h"    // For rlPushMatrix, rlTranslatef, etc.
 //#include "flecs.h"
+
+// #define DK_CONSOLE_IMPLEMENTATION
+// #define DK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
 #include "flecs_module.h"
 #include "flecs_raylib.h"
 #include "flecs_raygui.h"
+#include "flecs_dk_console.h"
 
 Vector3 MatrixGetPosition(Matrix mat)
 {
@@ -15,26 +19,26 @@ Vector3 MatrixGetPosition(Matrix mat)
 }
 
 // Custom logging function
-void CustomLog(int msgType, const char *text, va_list args){
-  char timeStr[64] = { 0 };
-  time_t now = time(NULL);
-  struct tm *tm_info = localtime(&now);
+// void CustomLog(int msgType, const char *text, va_list args){
+//   char timeStr[64] = { 0 };
+//   time_t now = time(NULL);
+//   struct tm *tm_info = localtime(&now);
 
-  strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
-  printf("[%s] ", timeStr);
+//   strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
+//   printf("[%s] ", timeStr);
   
-  switch (msgType)
-  {
-      case LOG_INFO: printf("[INFO] : "); break;
-      case LOG_ERROR: printf("[ERROR]: "); break;
-      case LOG_WARNING: printf("[WARN] : "); break;
-      case LOG_DEBUG: printf("[DEBUG]: "); break;
-      default: break;
-  }
+//   switch (msgType)
+//   {
+//       case LOG_INFO: printf("[INFO] : "); break;
+//       case LOG_ERROR: printf("[ERROR]: "); break;
+//       case LOG_WARNING: printf("[WARN] : "); break;
+//       case LOG_DEBUG: printf("[DEBUG]: "); break;
+//       default: break;
+//   }
 
-  vprintf(text, args);
-  printf("\n");
-}
+//   vprintf(text, args);
+//   printf("\n");
+// }
 
 void setup_world_scene(ecs_iter_t *it){
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
@@ -105,8 +109,6 @@ void setup_world_scene(ecs_iter_t *it){
     // .model=cubeModel,
     .isLoaded=true
   });
-
-
 
   // ecs_entity_t node3 = ecs_entity(it->world, {
   //   .name = "NodeChild3",
@@ -193,7 +195,7 @@ void user_input_system(ecs_iter_t *it){
         Vector3 right = Vector3CrossProduct(forward, rl_ctx->camera.up);
         
         if (IsKeyDown(KEY_W)){
-          ecs_print(1,"forward");
+          // ecs_print(1,"forward");
           t[i].position = Vector3Add(t[i].position, Vector3Scale(forward, pi_ctx->moveSpeed));
           t[i].isDirty = true;
         }
@@ -385,6 +387,7 @@ int main() {
   flecs_module_init(world);
   flecs_raylib_module_init(world);
   flecs_raygui_module_init(world);
+  flecs_dk_console_module_init(world);
 
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
@@ -394,33 +397,28 @@ int main() {
     .callback = setup_world_scene
   });
 
-  ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "user_capture_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
-    // .query.terms = {
-      // { .id = ecs_id(Transform3D), .src.id = EcsSelf },
-      //{ .id = ecs_id(ModelComponent), .src.id = EcsSelf }
-    // },
-    .callback = user_capture_input_system
-  });
+  // ecs_system_init(world, &(ecs_system_desc_t){
+  //   .entity = ecs_entity(world, { .name = "user_capture_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
+  //   .callback = user_capture_input_system
+  // });
 
-  ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "user_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
-    .query.terms = {
-      { .id = ecs_id(Transform3D), .src.id = EcsSelf },
-      //{ .id = ecs_id(ModelComponent), .src.id = EcsSelf }
-    },
-    .callback = user_input_system
-  });
+  // ecs_system_init(world, &(ecs_system_desc_t){
+  //   .entity = ecs_entity(world, { .name = "user_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
+  //   .query.terms = {
+  //     { .id = ecs_id(Transform3D), .src.id = EcsSelf },
+  //   },
+  //   .callback = user_input_system
+  // });
 
-  ecs_system_init(world, &(ecs_system_desc_t){
-    .entity = ecs_entity(world, { .name = "rl_hud_render2d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
-    .query.terms = {
-        { ecs_id(Transform3D)  }//,
-        // { .id = ecs_id(Transform3D), .src.id = EcsSelf }//,
-        //{ .id = ecs_id(ModelComponent), .src.id = EcsSelf }
-    },
-    .callback = rl_hud_render2d_system
-  });
+  // ecs_system_init(world, &(ecs_system_desc_t){
+  //   .entity = ecs_entity(world, { .name = "rl_hud_render2d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
+  //   .query.terms = {
+  //       { ecs_id(Transform3D)  }//,
+  //       // { .id = ecs_id(Transform3D), .src.id = EcsSelf }//,
+  //       //{ .id = ecs_id(ModelComponent), .src.id = EcsSelf }
+  //   },
+  //   .callback = rl_hud_render2d_system
+  // });
 
 
   while (!isRunning) {

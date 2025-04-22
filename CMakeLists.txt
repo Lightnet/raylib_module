@@ -177,6 +177,10 @@ set(FLECS_MODULE_SRC_FILES
     src/flecs_module.c
     src/flecs_raylib.c
     src/flecs_raygui.c
+    # src/impl_dk_console.c
+    src/dk_ui.c
+    src/dk_console.c
+    src/flecs_dk_console.c
 )
 set(app_lua main_luajit)
 # MAIN
@@ -196,6 +200,8 @@ add_executable(${app_lua}
 target_compile_definitions(${app_lua} PUBLIC
   # -DENET_IMPLEMENTATION
   -DRAYGUI_IMPLEMENTATION
+  # -DDK_CONSOLE_IMPLEMENTATION
+  # -DDK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
   -D_CRT_SECURE_NO_WARNINGS
 )
 
@@ -335,7 +341,6 @@ if(NOT EXISTS "${ASSETS_SRC_DIR}")
     # file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>/resources)
 endif()
 
-
 # Add custom command to copy entire assets directory
 add_custom_command(TARGET main_flecs_module POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${ASSETS_DEST_DIR}"
@@ -343,9 +348,7 @@ add_custom_command(TARGET main_flecs_module POST_BUILD
     COMMENT "Copying assets directory to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/resources"
 )
 
-
 # set(BUILD_ALL_EXAMPLES OFF CACHE BOOL "Build all examples")
-
 # #set(BUILD_ALL_EXAMPLES OFF)
 set(BUILD_ALL_EXAMPLES ON)
 
@@ -363,7 +366,7 @@ set(examples
   src/flecs_test.c
   # src/raylib_capture_input_camera.c
   examples/c/raylib/raylib_toggle_camera_mode01.c
-  examples/c/raylib/raylib_dk_console.c
+  # examples/c/raylib/raylib_dk_console.c
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
