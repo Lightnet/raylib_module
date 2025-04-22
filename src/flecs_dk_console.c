@@ -15,7 +15,8 @@
 #define DK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
 #include "dk_command.h"
 
-static Console console = { .toggle_key = KEY_TAB };
+// static Console console = { .toggle_key = KEY_TAB };
+static Console console = { .toggle_key = KEY_GRAVE };
 static Console* console_global_ptr = NULL;
 
 void CustomLog(int msgType, const char* text, va_list args);
@@ -108,13 +109,13 @@ void CustomLog(int msgType, const char* text, va_list args){
   struct tm* tm_info = localtime(&now);
 
   strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
-  //vsprintf(buffer, text, args);
-  vsprintf_s(buffer, sizeof(buffer), text, args);
+  vsprintf(buffer, text, args);
+  // vsprintf_s(buffer, sizeof(buffer), text, args);
 
   char* finalBuffer = (char*)malloc(1024);
   memset(finalBuffer, 0, 1024);
-  // sprintf(finalBuffer, "%s %s", timeStr, buffer);
-  sprintf_s(finalBuffer, sizeof(finalBuffer), "%s %s", timeStr, buffer);
+  sprintf(finalBuffer, "%s %s", timeStr, buffer);
+  // sprintf_s(finalBuffer, sizeof(finalBuffer), "%s %s", timeStr, buffer);
 
   const char* msgTypeStr = "Unknown";
   switch (msgType) {
@@ -137,8 +138,8 @@ void CustomLog(int msgType, const char* text, va_list args){
 
   char* finalBuffer2 = (char*)malloc(1024);
   memset(finalBuffer2, 0, 1024);
-  //sprintf(finalBuffer2, "%s %s", msgTypeStr, finalBuffer);
-  sprintf_s(finalBuffer2, sizeof(finalBuffer2), "%s %s", msgTypeStr, finalBuffer);
+  sprintf(finalBuffer2, "%s %s", msgTypeStr, finalBuffer);
+  // sprintf_s(finalBuffer2, sizeof(finalBuffer2), "%s %s", msgTypeStr, finalBuffer);
 
   free(finalBuffer);
 
@@ -200,30 +201,34 @@ void mathEval(const char* args){
 }
 
 void console_handler(const char* command){
+  
+  char* command_buff = (char*)malloc(strlen(command) + 1);
+  strcpy(command_buff, command);
+  command_buff[strlen(command)] = '\0';
 
-  // char* command_buff = (char*)malloc(strlen(command) + 1);
-  // strcpy(command_buff, command);
-  // command_buff[strlen(command)] = '\0';
+  char* token = strtok(command_buff, " ");
 
-  // char* token = strtok(command_buff, " ");
+  char* message_buff = (char*)malloc(strlen(command) + 1);
+  strcpy(message_buff, command);
+  message_buff[strlen(command)] = '\0';
 
-  // char* message_buff = (char*)malloc(strlen(command) + 1);
-  // strcpy(message_buff, command);
-  // message_buff[strlen(command)] = '\0';
+  char* message = strstr(message_buff, token) + strlen(token);
+  while (*message == ' ') { message++; }
 
-  // char* message = strstr(message_buff, token) + strlen(token);
-  // while (*message == ' ') { message++; }
+  if (!DK_ExtCommandExecute(token, message)) {
+    CustomLog(LOG_ERROR, TextFormat("Unknown command `%s`", command), NULL);
+  }
 
-  // if (!DK_ExtCommandExecute(token, message)) {
-  //   CustomLog(LOG_ERROR, TextFormat("Unknown command `%s`", command), NULL);
-  // }
-
-  // free(command_buff);
-  // free(message_buff);
+  free(command_buff);
+  free(message_buff);
 }
 
 void flecs_dk_console_setup_system(ecs_iter_t *it) {
   ecs_print(1, "flecs_dk_console_setup_system");
+  SetTraceLogCallback(CustomLog);
+  ecs_print(1, "DK_ExtCommandInit");
+  DK_ExtCommandInit();
+  DK_ExtCommandPush("echo", 1, "Prints a provided message in the console `echo Hello World`", &echo);
 
   console_global_ptr = &console;
   DK_ConsoleInit(console_global_ptr, LOG_SIZE);

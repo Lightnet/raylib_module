@@ -133,6 +133,9 @@ project/
     - [x] movement
     - [ ] health 
     - [ ] damage
+- [ ] dev console
+    - [x] echo text
+    - [x] " ` " or " ~ " = backtick or tilde key show toggle dev console
 - [ ] physics ?
 
 

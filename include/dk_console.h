@@ -1,5 +1,4 @@
 //
-// https://github.com/dkvilo/dk_console
 // Author: David Kviloria
 // ClangFormat: Mozilla
 //
@@ -19,29 +18,28 @@ extern "C"
 #if !defined(LOG_SIZE)
 #define LOG_SIZE 1080 * 1080 // size of log buffer
 #endif
-  typedef struct
-  {
-    char* text;
-    int type;
-  } Log;
 
-  typedef struct
-  {
-    int log_index;
-    Log* logs;
-    Rectangle ui;
-    bool is_open;
-    int scroll;
-    KeyboardKey toggle_key;
-  } Console;
+typedef struct
+{
+  char* text;
+  int type;
+} Log;
 
-  void DK_ConsoleInit(Console* console, int log_size);
+typedef struct
+{
+  int log_index;
+  Log* logs;
+  Rectangle ui;
+  bool is_open;
+  int scroll;
+  KeyboardKey toggle_key;
+} Console;
 
-  void DK_ConsoleUpdate(Console* console, ImUI* imui, void (*callback)(const char*));
-
-  void DK_ConsoleClear(Console* console);
-
-  void DK_ConsoleShutdown(Console* console, int log_size);
+void DK_ConsoleInit(Console* console, int log_size);
+void DK_ConsoleLog(Console* console, const char* text, int type);
+void DK_ConsoleUpdate(Console* console, ImUI* imui, void (*callback)(const char*));
+void DK_ConsoleClear(Console* console);
+void DK_ConsoleShutdown(Console* console, int log_size);
 
 // #if defined(DK_CONSOLE_IMPLEMENTATION)
 //   void DK_ConsoleInit(Console* console, int log_size)

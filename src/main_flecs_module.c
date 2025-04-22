@@ -397,28 +397,28 @@ int main() {
     .callback = setup_world_scene
   });
 
-  // ecs_system_init(world, &(ecs_system_desc_t){
-  //   .entity = ecs_entity(world, { .name = "user_capture_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
-  //   .callback = user_capture_input_system
-  // });
+  ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { .name = "user_capture_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
+    .callback = user_capture_input_system
+  });
 
-  // ecs_system_init(world, &(ecs_system_desc_t){
-  //   .entity = ecs_entity(world, { .name = "user_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
-  //   .query.terms = {
-  //     { .id = ecs_id(Transform3D), .src.id = EcsSelf },
-  //   },
-  //   .callback = user_input_system
-  // });
+  ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { .name = "user_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
+    .query.terms = {
+      { .id = ecs_id(Transform3D), .src.id = EcsSelf },
+    },
+    .callback = user_input_system
+  });
 
-  // ecs_system_init(world, &(ecs_system_desc_t){
-  //   .entity = ecs_entity(world, { .name = "rl_hud_render2d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
-  //   .query.terms = {
-  //       { ecs_id(Transform3D)  }//,
-  //       // { .id = ecs_id(Transform3D), .src.id = EcsSelf }//,
-  //       //{ .id = ecs_id(ModelComponent), .src.id = EcsSelf }
-  //   },
-  //   .callback = rl_hud_render2d_system
-  // });
+  ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { .name = "rl_hud_render2d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
+    .query.terms = {
+        { ecs_id(Transform3D)  }//,
+        // { .id = ecs_id(Transform3D), .src.id = EcsSelf }//,
+        //{ .id = ecs_id(ModelComponent), .src.id = EcsSelf }
+    },
+    .callback = rl_hud_render2d_system
+  });
 
 
   while (!isRunning) {
