@@ -236,5 +236,9 @@ We use CMake to build one binary (raylib_luajit.exe) that loads Lua scripts. The
 - flecs:
   - people from discord server.
 - raylib github
-- 
+- https://github.com/dkvilo/dk_console
+    - very simple dev console in raylib game/engine
+    - rework to match raylib 5.5
+- https://kenney.nl/assets/kenney-fonts
+    - freetype font
 

@@ -324,6 +324,26 @@ if(WIN32)
     )
 endif()
 
+# Copy entire assets folder (including subdirectories) to build output
+set(ASSETS_SRC_DIR "${CMAKE_SOURCE_DIR}/resources")  # Use quotes and forward slashes
+# set(ASSETS_DEST_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/resources")
+set(ASSETS_DEST_DIR "${CMAKE_BINARY_DIR}/$<CONFIG>/resources")
+
+# Check if assets directory exists
+if(NOT EXISTS "${ASSETS_SRC_DIR}")
+    message(WARNING "Assets directory '${ASSETS_SRC_DIR}' does not exist. Creating empty directory in build output.")
+    # file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>/resources)
+endif()
+
+
+# Add custom command to copy entire assets directory
+add_custom_command(TARGET main_flecs_module POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${ASSETS_DEST_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${ASSETS_SRC_DIR}" "${ASSETS_DEST_DIR}"
+    COMMENT "Copying assets directory to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/resources"
+)
+
+
 # set(BUILD_ALL_EXAMPLES OFF CACHE BOOL "Build all examples")
 
 # #set(BUILD_ALL_EXAMPLES OFF)
@@ -343,6 +363,7 @@ set(examples
   src/flecs_test.c
   # src/raylib_capture_input_camera.c
   examples/c/raylib/raylib_toggle_camera_mode01.c
+  examples/c/raylib/raylib_dk_console.c
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
