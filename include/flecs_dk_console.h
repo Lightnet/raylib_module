@@ -21,6 +21,7 @@
 typedef struct {
   ImUI imui;
   Console* console;
+  Font font;
   bool isLoaded;
 } DKConsoleContext;
 

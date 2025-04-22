@@ -222,41 +222,40 @@ void console_handler(const char* command){
   free(message_buff);
 }
 
-void flecs_dk_console_setup_system(ecs_iter_t *it){
-  ecs_print(1,"flecs_dk_console_setup_system");
-  // SetTraceLogCallback(CustomLog);
-  // DK_ExtCommandInit();
-  //DK_ExtCommandPush("echo", 1, "Prints a provided message in the console `echo Hello World`", &echo);
+void flecs_dk_console_setup_system(ecs_iter_t *it) {
+  ecs_print(1, "flecs_dk_console_setup_system");
 
+  // Initialize console
+  console_global_ptr = &console;
+  DK_ConsoleInit(console_global_ptr, LOG_SIZE);
+
+  // Initialize ImUI
   ImUI imui;
   imui.theme = &DK_ImUISolarizedTheme;
   imui.style = &DK_ImUIDefaultStyle;
 
-  console_global_ptr=&console;
-  DK_ConsoleInit(console_global_ptr, LOG_SIZE);
+  // Load font (persist it in DKConsoleContext)
+  Font customFont;
+  const char* fontPath = "resources/font/Kenney Pixel.ttf";
+  customFont = LoadFont(fontPath);
+  if (customFont.texture.id == 0) {
+    ecs_print(1, "Failed to load font, falling back to default");
+    customFont = GetFontDefault();
+  }
+  SetTextureFilter(customFont.texture, TEXTURE_FILTER_BILINEAR);
+  imui.font = &customFont; // Temporary assignment for initialization
 
-  // Font customFont = LoadFont("resources/font/Kenney Pixel.ttf"); // Replace with actual path
-  // if (customFont.texture.id == 0) {
-  //   // Font failed to load
-  //   TraceLog(LOG_ERROR, "Failed to load font!");
-  //   // Optionally, fall back to default font
-  //   customFont = GetFontDefault();
-  // }
-  // imui.font = &customFont; // Set the font pointer
-  Font customFont = GetFontDefault();
-  imui.font = &customFont;
-
-  // UnloadFont(customFont);
-  // UnloadImage(atlas);
-  // UnloadFileData(fileData);
-  SetTextureFilter(imui.font->texture, TEXTURE_FILTER_BILINEAR);
-
+  // Store in singleton (including the font to keep it alive)
   ecs_singleton_set(it->world, DKConsoleContext, {
-    .imui=imui,
-    .console=console_global_ptr,
-    .isLoaded=true,
+    .imui = imui,
+    .console = console_global_ptr,
+    .font = customFont, // Store font separately to manage lifetime
+    .isLoaded = true,
   });
 
+  //DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  //dc_ctx->imui.font = &dc_ctx->font; // Ensure imui.font points to the valid font
+  
 }
 
 void render2d_dk_console_system(ecs_iter_t *it){
@@ -268,8 +267,12 @@ void render2d_dk_console_system(ecs_iter_t *it){
 
   const char *text = "Press TAB to toggle the console";
   Vector2 position = { 20.0f, 20.0f };
-  DrawTextEx(*dc_ctx->imui.font, text, position, 20.0f, 1.0f, GRAY);
-  // DK_ConsoleUpdate(dc_ctx->console, &dc_ctx->imui, console_handler);
+  // DrawTextEx(*dc_ctx->imui.font, text, position, 20.0f, 1.0f, GRAY);
+  DrawTextEx(dc_ctx->font, text, position, 20.0f, 1.0f, GRAY);//working
+  dc_ctx->imui.font = &dc_ctx->font;
+  
+  // Update console (pass the stored ImUI and console)
+  DK_ConsoleUpdate(dc_ctx->console, &dc_ctx->imui, console_handler);
 
   // DrawTextEx(*imui.font, text, position, 20.0f, 1.0f, GRAY);
   // DK_ConsoleUpdate(console_global_ptr, &imui, console_handler);
@@ -278,7 +281,15 @@ void render2d_dk_console_system(ecs_iter_t *it){
 void dk_console_register_components(ecs_world_t *world){
   // 
   ECS_COMPONENT_DEFINE(world, DKConsoleContext);
-  
+}
+
+void flecs_dk_console_cleanup_system(ecs_iter_t *it) {
+  DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  if (dc_ctx && dc_ctx->isLoaded) {
+    UnloadFont(dc_ctx->font);
+    DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE);
+    dc_ctx->isLoaded = false;
+  }
 }
 
 void dk_console_register_systems(ecs_world_t *world){
@@ -299,7 +310,17 @@ void dk_console_register_systems(ecs_world_t *world){
     .callback = render2d_dk_console_system
   });
 
+  // ecs_system_init(world, &(ecs_system_desc_t){
+  //   .entity = ecs_entity(world, { 
+  //     .name = "flecs_dk_console_cleanup_system", 
+  //     .add = ecs_ids(ecs_dependson(EcsOnDelete)) 
+  //   }),
+  //   .callback = flecs_dk_console_cleanup_system
+  // });
+
 }
+
+
 
 void flecs_dk_console_module_init(ecs_world_t *world){
 
