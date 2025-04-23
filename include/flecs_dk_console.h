@@ -27,6 +27,9 @@ typedef struct {
 
 ECS_COMPONENT_DECLARE(DKConsoleContext);
 
+ecs_entity_t ConsoleEvent;
+ecs_entity_t ConsoleModule;
+
 void flecs_dk_console_module_init(ecs_world_t *world);
 
 #endif

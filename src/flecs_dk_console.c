@@ -17,6 +17,7 @@
 // static Console console = { .toggle_key = KEY_TAB };
 static Console console = { .toggle_key = KEY_GRAVE };
 static Console* console_global_ptr = NULL;
+static ecs_world_t *c_world; // access to this file only
 
 void CustomLog(int msgType, const char* text, va_list args);
 
@@ -97,7 +98,7 @@ double evaluateRPN(const char *expr) {
 
   return result;
 }
-// loggin from dk_console
+// loggin from dk_console, raylib, 
 void CustomLog(int msgType, const char* text, va_list args) {
   if (console_global_ptr == NULL || console_global_ptr->logs == NULL) {
       fprintf(stderr, "CustomLog: Invalid console or logs array\n");
@@ -199,6 +200,21 @@ void mathEval(const char* args){
   CustomLog(LOG_INFO, TextFormat("Eval(%s) = %f", args, result), NULL);
 }
 
+void feco(const char* argv){
+  ecs_print(1,"FLECS TEST...");
+  if(c_world){
+    ecs_print(1,"world test found...");
+
+    ecs_emit(c_world, &(ecs_event_desc_t) {
+      .event = ConsoleEvent,
+      .entity = ConsoleModule
+    });
+
+
+  }
+  CustomLog(LOG_INFO, argv, NULL);
+}
+
 void console_handler(const char* command){
 
   char* command_buff = (char*)malloc(strlen(command) + 1);
@@ -228,9 +244,14 @@ void flecs_dk_console_setup_system(ecs_iter_t *it) {
   ecs_print(1, "DK_ExtCommandInit");
   DK_ExtCommandInit();
   DK_ExtCommandPush("echo", 1, "Prints a provided message in the console `echo Hello World`", &echo);
+  DK_ExtCommandPush("feco", 1, "flecs test", &feco);
+  DK_ExtCommandPush("clear", 0, "Clears the console buffer", &clear);
+  DK_ExtCommandPush("help", 1, "Shows the available commands and/or specific one `help <command_name>`", &help);
+
 
   console_global_ptr = &console;
   DK_ConsoleInit(console_global_ptr, LOG_SIZE);
+  c_world = it->world;
 
   // Static font to persist
   static Font customFont;
@@ -254,14 +275,6 @@ void flecs_dk_console_setup_system(ecs_iter_t *it) {
     .isLoaded = true,
   });
 
-  // Update imui.font to point to the stored font
-  //DKConsoleContext *dc_ctx = ecs_singleton_get(it->world, DKConsoleContext);
-  //dc_ctx->imui.font = &dc_ctx->font; // Ensure imui.font points to the valid font
-
-
-  //DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
-  //dc_ctx->imui.font = &dc_ctx->font; // Ensure imui.font points to the valid font
-  
 }
 
 void render2d_dk_console_system(ecs_iter_t *it){
@@ -280,9 +293,16 @@ void render2d_dk_console_system(ecs_iter_t *it){
 
 }
 
+void dk_console_event_system(ecs_iter_t *it){
+  ecs_print(1,"[event] dk_console_event_system");
+}
+
 void dk_console_register_components(ecs_world_t *world){
   // 
   ECS_COMPONENT_DEFINE(world, DKConsoleContext);
+
+  ConsoleEvent = ecs_new(world);
+  ConsoleModule = ecs_entity(world, { .name = "ConsoleModule" });
 }
 
 void flecs_dk_console_cleanup_system(ecs_iter_t *it) {
@@ -335,15 +355,15 @@ void dk_console_register_systems(ecs_world_t *world){
     .callback = flecs_dk_console_cleanup_event_system
   });
 
-  // ecs_observer(world, {
-  //   // Not interested in any specific component
-  //   .query.terms = {{ EcsAny, .src.id = CloseModule }},
-  //   .events = { CloseEvent },
-  //   .callback = flecs_dk_console_close_event_system
-  // });
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = ConsoleModule }},
+    .events = { ConsoleEvent },
+    .callback = dk_console_event_system
+  });
 
 }
-
+// set up
 void flecs_dk_console_module_init(ecs_world_t *world){
 
   dk_console_register_components(world);
