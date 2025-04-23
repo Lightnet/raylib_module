@@ -20,6 +20,7 @@
     "dk_command.h": "c",
     "dk_console.h": "c",
     "ctype.h": "c",
-    "assert.h": "c"
+    "assert.h": "c",
+    "type_traits": "c"
   }
 }

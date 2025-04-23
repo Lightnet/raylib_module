@@ -14,6 +14,19 @@
   There no flecs commands args has not yet work on.
 
   It need some global variable to get it working.
+## dev config:
+```c
+#include "flecs_dk_console.h"
+//...
+void name_system(ecs_iter_t *it){
+  DKConsoleContext *dkc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  //check dev console run to disable input
+  if(!dkc_ctx || !dkc_ctx->console || dkc_ctx->console->is_open==true) return;
+  //...
+}
+```
+  This code prevent input. It prevent player moving when typing in the dev console commands.
+
 
 # Phase:
   Important phase order for onstart and run time render order.
@@ -223,9 +236,10 @@ void flecs_name_module_init(ecs_world_t *world){
   //register system
   name_register_systems(world);
 }
-
-
 ```
+
+
+
 
 # References:
  * 

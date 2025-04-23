@@ -1,3 +1,9 @@
+#define WIN32_LEAN_AND_MEAN 
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define NOGDI
+#define NOUSER
+#define MMNOSOUND
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>                   // Required for: time_t, tm, time(), localtime(), strftime()
@@ -13,9 +19,10 @@
 #include "flecs_raygui.h"
 #include "flecs_dk_console.h"
 
-Vector3 MatrixGetPosition(Matrix mat)
-{
-    return (Vector3){ mat.m12, mat.m13, mat.m14 };
+#include <windows.h>
+
+Vector3 MatrixGetPosition(Matrix mat){
+  return (Vector3){ mat.m12, mat.m13, mat.m14 };
 }
 
 // Custom logging function
@@ -23,10 +30,8 @@ Vector3 MatrixGetPosition(Matrix mat)
 //   char timeStr[64] = { 0 };
 //   time_t now = time(NULL);
 //   struct tm *tm_info = localtime(&now);
-
 //   strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
 //   printf("[%s] ", timeStr);
-  
 //   switch (msgType)
 //   {
 //       case LOG_INFO: printf("[INFO] : "); break;
@@ -35,10 +40,47 @@ Vector3 MatrixGetPosition(Matrix mat)
 //       case LOG_DEBUG: printf("[DEBUG]: "); break;
 //       default: break;
 //   }
-
 //   vprintf(text, args);
 //   printf("\n");
 // }
+
+// Function to check if any common key is pressed [input]
+bool IsAnyKeyPressed(void){
+
+    // Check common keys (letters, numbers, space, etc.) [input]
+    int keys[] = {
+        KEY_A, KEY_B, KEY_C, KEY_D, KEY_E, KEY_F, KEY_G, KEY_H, KEY_I, KEY_J,
+        KEY_K, KEY_L, KEY_M, KEY_N, KEY_O, KEY_P, KEY_Q, KEY_R, KEY_S, KEY_T,
+        KEY_U, KEY_V, KEY_W, KEY_X, KEY_Y, KEY_Z,
+        KEY_ZERO, KEY_ONE, KEY_TWO, KEY_THREE, KEY_FOUR, KEY_FIVE, KEY_SIX,
+        KEY_SEVEN, KEY_EIGHT, KEY_NINE,
+        KEY_SPACE, KEY_ENTER, KEY_TAB
+    };
+    int keyCount = sizeof(keys) / sizeof(keys[0]);
+
+    for (int i = 0; i < keyCount; i++)
+    {
+        if (IsKeyPressed(keys[i])) return true;
+    }
+    return false;
+}
+
+// Function to check if any mouse button is pressed [input]
+bool IsAnyMouseButtonPressed(void){
+
+    // Check all defined mouse buttons [input]
+    int buttons[] = {
+        MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE,
+        MOUSE_BUTTON_SIDE, MOUSE_BUTTON_EXTRA, MOUSE_BUTTON_FORWARD, MOUSE_BUTTON_BACK
+    };
+    int buttonCount = sizeof(buttons) / sizeof(buttons[0]);
+
+    for (int i = 0; i < buttonCount; i++)
+    {
+        if (IsMouseButtonPressed(buttons[i])) return true;
+    }
+    return false;
+}
 
 void setup_world_scene(ecs_iter_t *it){
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
@@ -143,6 +185,9 @@ void user_input_system(ecs_iter_t *it){
   CameraContext_T *c_ctx = ecs_singleton_ensure(it->world, CameraContext_T);
   if(!c_ctx) return;
 
+  DKConsoleContext *dkc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  if(!dkc_ctx || !dkc_ctx->console || dkc_ctx->console->is_open==true) return;
+
   if(c_ctx->currentMode != F_CAMERA_PLAYER) return;
 
   Transform3D *t = ecs_field(it, Transform3D, 0);
@@ -169,6 +214,7 @@ void user_input_system(ecs_iter_t *it){
       if (strcmp(name, "PlayerNode") == 0) {// parent for moving the player node
         //ecs_print(1,"Cube");
         bool wasModified = false;
+        
 
         // Compute forward vector for camera direction
         // Vector3 forward = {
@@ -188,7 +234,9 @@ void user_input_system(ecs_iter_t *it){
           0,                       // Y: Grounded (as you set)
           cosf(pi_ctx->yaw)               // Z: Forward/backward (negative cos for -Z forward)
         };
-
+        
+        float dt = GetFrameTime();
+        float moveTime = pi_ctx->moveSpeed * dt;
 
         forward = Vector3Normalize(forward); // Ensure unit length
         forward.y = 0;//ground for now.
@@ -196,19 +244,19 @@ void user_input_system(ecs_iter_t *it){
         
         if (IsKeyDown(KEY_W)){
           // ecs_print(1,"forward");
-          t[i].position = Vector3Add(t[i].position, Vector3Scale(forward, pi_ctx->moveSpeed));
+          t[i].position = Vector3Add(t[i].position, Vector3Scale(forward, moveTime));
           t[i].isDirty = true;
         }
         if (IsKeyDown(KEY_S)) {
-          t[i].position = Vector3Subtract(t[i].position, Vector3Scale(forward, pi_ctx->moveSpeed));
+          t[i].position = Vector3Subtract(t[i].position, Vector3Scale(forward, moveTime));
           t[i].isDirty = true;
         }
         if (IsKeyDown(KEY_A)) {
-          t[i].position = Vector3Subtract(t[i].position, Vector3Scale(right, pi_ctx->moveSpeed));
+          t[i].position = Vector3Subtract(t[i].position, Vector3Scale(right, moveTime));
           t[i].isDirty = true;
         }
         if (IsKeyDown(KEY_D)) {
-          t[i].position = Vector3Add(t[i].position, Vector3Scale(right, pi_ctx->moveSpeed));
+          t[i].position = Vector3Add(t[i].position, Vector3Scale(right, moveTime));
           t[i].isDirty = true;
         }
 
@@ -228,7 +276,9 @@ void user_input_system(ecs_iter_t *it){
         // t[i] = setTransform3DPos(t[i], t[i].position);
         //rl_ctx->camera
         Vector3 vecPos =  MatrixGetPosition(t[i].worldMatrix);
-        rl_ctx->camera.position = (Vector3){ vecPos.x, vecPos.y, vecPos.z };
+        //Vector3 Vector3Lerp(Vector3 v1, Vector3 v2, float amount);
+        rl_ctx->camera.position = Vector3Lerp(rl_ctx->camera.position, vecPos, 0.55f);//smooth camera
+        // rl_ctx->camera.position = (Vector3){ vecPos.x, vecPos.y, vecPos.z };
         //rl_ctx->camera.target = (Vector3){vecPos.x, vecPos.y, vecPos.z - 1.0f};
         //rl_ctx->camera.target = NULL;
       }else if (strcmp(name, "Floor") == 0) {
@@ -248,6 +298,13 @@ void user_capture_input_system(ecs_iter_t *it){
   CameraContext_T *c_ctx = ecs_singleton_ensure(it->world, CameraContext_T);
   if(!c_ctx) return;
 
+  DKConsoleContext *dkc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  if(!dkc_ctx || !dkc_ctx->console || dkc_ctx->console->is_open==true) return;
+
+  // ecs_print(1,"delta_time ");
+  // ecs_print(1,"delta %d", it->delta_time);
+  // ecs_print(1,"delta_system_time %d", it->delta_system_time);
+
   if (IsKeyPressed(KEY_TAB)){
     c_ctx->currentMode = (FCameraMode)((c_ctx->currentMode + 1) % 3); // Cycle through modes
     switch (c_ctx->currentMode){
@@ -266,7 +323,8 @@ void user_capture_input_system(ecs_iter_t *it){
   int key = GetKeyPressed();
   // ecs_print(1,"key press: %d", key);
 
-  if(!pi_ctx->isCaptureMouse && ( (key > 0) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT) )) {
+  // if(!pi_ctx->isCaptureMouse && ( (key > 0) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT) )) {
+  if(!pi_ctx->isCaptureMouse && ( IsAnyKeyPressed() || IsAnyMouseButtonPressed() )) {
     HideCursor();
     DisableCursor();  // Locks mouse to window
     pi_ctx->isCaptureMouse = true;
@@ -300,23 +358,29 @@ void user_capture_input_system(ecs_iter_t *it){
   Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, rl_ctx->camera.up));  // Right vector [raymath]
   Vector3 up = rl_ctx->camera.up;  // Global up vector (0, 1, 0) [raymath]
 
+  //ecs_print(1,"delta_time ");
+  // ecs_print(1,"delta %d", it->delta_time);
+
+  float dt = GetFrameTime();
+  float moveTime = pi_ctx->moveSpeed * dt;
+
   // Forward/Backward (W/S)
   if (IsKeyDown(KEY_W))  // Move forward [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(forward, pi_ctx->moveSpeed));  // [raymath]
+    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(forward, moveTime));  // [raymath]
   if (IsKeyDown(KEY_S))  // Move backward [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(forward, -pi_ctx->moveSpeed)); // [raymath]
+    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(forward, -moveTime)); // [raymath]
 
   // Left/Right (A/D)
   if (IsKeyDown(KEY_A))  // Move left [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(right, -pi_ctx->moveSpeed));  // [raymath]
+    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(right, -moveTime));  // [raymath]
   if (IsKeyDown(KEY_D))  // Move right [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(right, pi_ctx->moveSpeed));   // [raymath]
+    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(right, moveTime));   // [raymath]
 
   // Up/Down (Space/Shift)
   if (IsKeyDown(KEY_SPACE))  // Move up [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(up, pi_ctx->moveSpeed));      // [raymath]
+    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(up, moveTime));      // [raymath]
   if (IsKeyDown(KEY_LEFT_SHIFT))  // Move down [input]
-    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(up, -pi_ctx->moveSpeed));     // [raymath]
+    rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(up, -moveTime));     // [raymath]
 
   // Update camera target after movement
   rl_ctx->camera.target = Vector3Add(rl_ctx->camera.position, forward);
@@ -420,12 +484,48 @@ int main() {
     .callback = rl_hud_render2d_system
   });
 
+  // Initialize time variables
+  clock_t last_time = clock();
+  float delta_time = 0.0f;
+  const float target_frame_time = 1.0f / 60.0f; // Target 60 FPS (16.66ms)
+  const float fixed_time_step = 1.0f / 60.0f; // Fixed step for consistent updates
+  float accumulated_time = 0.0f;
+  
   while (!isRunning) {
+    
     RayLibContext *rl_ctx = ecs_singleton_ensure(world, RayLibContext);
     if(!rl_ctx) return;
-    float dt = GetFrameTime();
+    // float dt = GetFrameTime();
     // ecs_print(1,"dt %.8f", dt);
-    ecs_progress(world, dt);
+    // ecs_progress(world, dt);
+    
+    // Calculate delta_time in seconds
+    clock_t current_time = clock();
+    delta_time = (float)(current_time - last_time) / CLOCKS_PER_SEC;
+    last_time = current_time;
+
+    // Cap delta_time to avoid large jumps
+    if (delta_time > 0.1f) delta_time = 0.1f;
+
+    // Accumulate time for fixed time step
+    accumulated_time += delta_time;
+
+    // Process fixed time steps
+    while (accumulated_time >= fixed_time_step) {
+      ecs_progress(world, fixed_time_step); // Use fixed time step for consistency
+      // ecs_print(1, "loop delta_time %.8f", fixed_time_step);
+      accumulated_time -= fixed_time_step;
+    }
+
+    // Frame rate control: Sleep to approximate 60 FPS
+    clock_t frame_end_time = clock();
+    float frame_time = (float)(frame_end_time - current_time) / CLOCKS_PER_SEC;
+    float sleep_time = target_frame_time - frame_time;
+    if (sleep_time > 0) {
+        Sleep((DWORD)(sleep_time * 1000.0f)); // Convert seconds to milliseconds
+    }
+
+    // close loop
     isRunning = rl_ctx->shouldQuit;
   }
 

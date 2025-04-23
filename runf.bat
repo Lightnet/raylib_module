@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set APPNAME=flecs_test
+set APPNAME=flecs_delta_time
 set APPPATH=build\Debug\%APPNAME%.exe
 set EXECUTABLE=%APPNAME%.exe
 set DEMO_SRC=script.lua

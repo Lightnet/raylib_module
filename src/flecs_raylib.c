@@ -465,7 +465,7 @@ void flecs_raylib_module_init(ecs_world_t *world){
     .yaw=0.0f,
     .pitch=0.0f,
     .mouseSensitivity=0.005f,
-    .moveSpeed=0.1f
+    .moveSpeed=2.0f
   });
 
   ecs_singleton_set(world, CameraContext_T, {

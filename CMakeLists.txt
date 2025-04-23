@@ -188,20 +188,15 @@ add_executable(${app_lua}
     # src/main.c
     # src/raylib_collision.c
     # src/raylib_collision_fps.c
-    # src/main_flecs.c
-    # src/main_raylib.c
     src/main_luajit.c
-    # src/main_raylib.c
-    # src/raylib_nuklear_test.c
-    # src/raylib_flecs_nuklear.c
     ${LUA_MODULE_SRC_FILES}
 )
 
 target_compile_definitions(${app_lua} PUBLIC
   # -DENET_IMPLEMENTATION
-  -DRAYGUI_IMPLEMENTATION
   # -DDK_CONSOLE_IMPLEMENTATION
   # -DDK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
+  -DRAYGUI_IMPLEMENTATION
   -D_CRT_SECURE_NO_WARNINGS
 )
 
@@ -371,8 +366,9 @@ set(examples
   # src/raylib3d_flecs_transform_hierarchy06.c
   src/flecs_test.c
   # src/raylib_capture_input_camera.c
-  examples/c/raylib/raylib_toggle_camera_mode01.c
-  examples/c/raylib/raylib_dk_console.c
+  # examples/c/raylib/raylib_toggle_camera_mode01.c
+  # examples/c/raylib/raylib_dk_console.c
+  # examples/c/flecs/flecs_delta_time.c
   
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
