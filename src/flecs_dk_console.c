@@ -210,10 +210,42 @@ void feco(const char* argv){
       .entity = ConsoleModule
     });
 
-
   }
   CustomLog(LOG_INFO, argv, NULL);
 }
+
+void setpos(const char* argv){
+  if(c_world){
+    
+  }
+  CustomLog(LOG_INFO, argv, NULL);
+}
+
+void reset(const char* argv){
+  if(c_world){
+    ecs_query_t *q = ecs_query(c_world, {
+      .terms = {
+        { .id = ecs_id(Transform3D) },
+      }
+    });
+
+    ecs_iter_t s_it = ecs_query_iter(c_world, q);
+
+    while (ecs_query_next(&s_it)) {
+      Transform3D *p = ecs_field(&s_it, Transform3D, 0);
+      for (int i = 0; i < s_it.count; i ++) {
+        // const char *name = ecs_get_name(c_world, s_it->entities[i]);
+        const char *name = ecs_get_name(c_world, s_it.entities[i]);
+        if (strcmp(name, "PlayerNode") == 0) {
+          p[i].position = (Vector3){0,0,0};
+          p[i].isDirty = true;
+        }
+      }
+    }
+  }
+  CustomLog(LOG_INFO, argv, NULL);
+}
+
 
 void console_handler(const char* command){
 
@@ -248,6 +280,7 @@ void flecs_dk_console_setup_system(ecs_iter_t *it) {
   DK_ExtCommandPush("clear", 0, "Clears the console buffer", &clear);
   DK_ExtCommandPush("help", 1, "Shows the available commands and/or specific one `help <command_name>`", &help);
 
+  DK_ExtCommandPush("reset", 1, "flecs reset position player node", &reset);
 
   console_global_ptr = &console;
   DK_ConsoleInit(console_global_ptr, LOG_SIZE);
