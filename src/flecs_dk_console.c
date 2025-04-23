@@ -410,7 +410,8 @@ void render2d_dk_console_system(ecs_iter_t *it){
   
   // ecs_print(1,"render2d dk_console");
 
-  const char *text = "Press TAB to toggle the console";
+  // const char *text = "Press TAB to toggle the console";
+  const char *text = "Press ` (backquote) or ~ (tilde) to toggle the console";
   Vector2 position = { 20.0f, 20.0f };
   DrawTextEx(*dc_ctx->imui.font, text, position, 20.0f, 1.0f, GRAY);
   

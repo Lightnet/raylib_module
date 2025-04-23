@@ -424,20 +424,20 @@ void rl_hud_render2d_system(ecs_iter_t *it){
   switch (c_ctx->currentMode){
     case F_CAMERA_FREE:
       // ecs_print(1,"F_CAMERA_FREE");
-      DrawText(TextFormat("Camera Mode: F_CAMERA_FREE"), 10, 30, 20, DARKGRAY);
+      DrawText(TextFormat("[Tab] Camera Mode: F_CAMERA_FREE"), 10, 50, 20, DARKGRAY);
       break;
     case F_CAMERA_PLAYER:
       // ecs_print(1,"F_CAMERA_PLAYER");
-      DrawText(TextFormat("Camera Mode: F_CAMERA_PLAYER"), 10, 30, 20, DARKGRAY);
+      DrawText(TextFormat("[Tab] Camera Mode: F_CAMERA_PLAYER"), 10, 50, 20, DARKGRAY);
       break;
     case F_CAMERA_DEBUG:
       // ecs_print(1,"F_CAMERA_DEBUG");
-      DrawText(TextFormat("Camera Mode: F_CAMERA_DEBUG"), 10, 30, 20, DARKGRAY);
+      DrawText(TextFormat("[Tab] Camera Mode: F_CAMERA_DEBUG"), 10, 50, 20, DARKGRAY);
       break;
   }
 
 
-  DrawText(TextFormat("Toggled mode to: %s\n", pi_ctx->isMovementMode ? "Movement" : "Rotation"), 10, 10, 20, DARKGRAY);
+  // DrawText(TextFormat("Toggled mode to: %s\n", pi_ctx->isMovementMode ? "Movement" : "Rotation"), 10, 30, 20, DARKGRAY);
 }
 
 int main() {

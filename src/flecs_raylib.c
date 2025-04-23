@@ -336,14 +336,12 @@ void rl_close_event_system(ecs_iter_t *it){
   // close
   // CloseWindow(); // does not work
 }
-
-
+// test
 void OnResize(ecs_iter_t *it) {
   Resize *p = it->param; // Obtain event data from it->param member
   ecs_print(1,"Resize %d x %d", p->width, p->height);
 }
-
-
+// register
 void rl_register_components(ecs_world_t *world){
 
   ECS_COMPONENT_DEFINE(world, ECS_RL_INPUT_T);
@@ -357,7 +355,7 @@ void rl_register_components(ecs_world_t *world){
   ECS_COMPONENT_DEFINE(world, Resize);
 
 }
-
+// register systems
 void rl_register_systems(ecs_world_t *world){
 
   ecs_observer(world, {
@@ -448,7 +446,7 @@ void rl_register_systems(ecs_world_t *world){
   });
 
 }
-
+// init module
 void flecs_raylib_module_init(ecs_world_t *world){
   ecs_print(1, "Initializing raylib module...");
   rl_register_components(world);

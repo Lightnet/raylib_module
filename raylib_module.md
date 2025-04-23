@@ -237,7 +237,27 @@ void flecs_name_module_init(ecs_world_t *world){
   name_register_systems(world);
 }
 ```
+# Event and Params:
+  flecs docs.
 
+  https://www.flecs.dev/flecs/md_docs_2ObserversManual.html
+
+```
+typedef struct {
+  int width;
+  int height;
+} Resize;
+```
+```
+  resize event pass {100,100}
+```
+```c
+ecs_emit(world, &(ecs_event_desc_t) {
+    .event = ecs_id(Resize),
+    .entity = widget,
+    .param = &(Resize){100, 200}
+});
+```
 
 
 
