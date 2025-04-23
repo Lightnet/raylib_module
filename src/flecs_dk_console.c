@@ -1,6 +1,6 @@
 // 
 // base on dk_console
-// 
+// this dk_console module
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +9,6 @@
 #include <ctype.h> // isdigit
 #include <stdarg.h>
 #include <string.h>
-
 #include "flecs_dk_console.h"
 
 #define DK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
@@ -98,8 +97,7 @@ double evaluateRPN(const char *expr) {
 
   return result;
 }
-
-
+// loggin from dk_console
 void CustomLog(int msgType, const char* text, va_list args) {
   if (console_global_ptr == NULL || console_global_ptr->logs == NULL) {
       fprintf(stderr, "CustomLog: Invalid console or logs array\n");
@@ -149,7 +147,6 @@ void CustomLog(int msgType, const char* text, va_list args) {
   console_global_ptr->logs[console_global_ptr->log_index].type = msgType;
   console_global_ptr->log_index++;
 }
-
 
 void echo(const char* argv){
 
@@ -203,7 +200,7 @@ void mathEval(const char* args){
 }
 
 void console_handler(const char* command){
-  
+
   char* command_buff = (char*)malloc(strlen(command) + 1);
   strcpy(command_buff, command);
   command_buff[strlen(command)] = '\0';
@@ -271,7 +268,7 @@ void render2d_dk_console_system(ecs_iter_t *it){
   // ecs_print(1,"render2d dk_console");
   DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
   if (!dc_ctx || !dc_ctx->isLoaded) return;
-  //DKConsoleContext
+  
   // ecs_print(1,"render2d dk_console");
 
   const char *text = "Press TAB to toggle the console";
@@ -292,47 +289,26 @@ void flecs_dk_console_cleanup_system(ecs_iter_t *it) {
   DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
   // ecs_print(1,"flecs_dk_console_cleanup_system");
   // if (dc_ctx && dc_ctx->isLoaded) {
-    // DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE);
-    // UnloadFont(*dc_ctx->imui.font);
+    DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE);
+    UnloadFont(*dc_ctx->imui.font);
     // dc_ctx->isLoaded = false;
   // }
+
+  module_break_name(it, "dk_console_module");
+  ecs_print(1,"finish clean up dk console.");
 }
 
 void flecs_dk_console_cleanup_event_system(ecs_iter_t *it) {
   ecs_print(1,"flecs_dk_console_cleanup_event_system");
-  // flecs_dk_console_cleanup_system(it);
   DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
   if(!dc_ctx) return;
   dc_ctx->isLoaded = false;
-  // DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE); // not working?
-
-  ecs_print(1,"log zsize: %d", LOG_SIZE);
-  ecs_print(1,"log_index zsize: %d", dc_ctx->console->log_index);
-
   // Test
   // for(int i = 0; i < 10000;i++){
   //   ecs_print(1,"test...");  
   // }
-  
-  UnloadFont(*dc_ctx->imui.font);
-  // DK_ConsoleShutdown(console_global_ptr, LOG_SIZE); //
-  // DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE); //
-
-  ecs_print(1,"finish clean up dk console.");
-
-  module_break_name(it, "dk_console_module");
-
+  flecs_dk_console_cleanup_system(it);
 }
-
-// void flecs_dk_console_close_event_system(ecs_iter_t *it) {
-//   ecs_print(1,"flecs_dk_console_close_event_system");
-//   // flecs_dk_console_cleanup_system(it);
-//   DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
-//   if(!dc_ctx) return;
-//   dc_ctx->isLoaded = false;
-//   // DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE); // not working?
-//   // UnloadFont(*dc_ctx->imui.font);
-// }
 
 void dk_console_register_systems(ecs_world_t *world){
 

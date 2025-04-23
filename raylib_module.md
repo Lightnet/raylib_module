@@ -1,6 +1,20 @@
 # raylib module:
   Work in progress.
 
+# variables:
+  Note that const variable will have same name as from raylib, raygui, raymath and other libraries.
+
+# Dev console:
+  Work in progress.
+
+  There is dev console for added from dk_console. https://github.com/dkvilo/dk_console
+
+  I change toggle console menu tab to "~" key. Note there some bug on adding some key letter. Up and Down key from arrow key for scroll.
+
+  There no flecs commands args has not yet work on.
+
+  It need some global variable to get it working.
+
 # Phase:
   Important phase order for onstart and run time render order.
 
@@ -107,8 +121,7 @@ ecs_remove_pair(world, child, EcsChildOf, parent);
   });
 ```
 
-
-# inputs:
+# Inputs:
 
 ```c
 void user_input_system(ecs_iter_t *it){
@@ -138,6 +151,81 @@ void user_input_system(ecs_iter_t *it){
 
 # GUI:
  None
+
+# Module Set Up:
+flecs_name.c
+```c
+
+typedef struct {
+  bool isLoaded;
+} NameContext;
+
+ECS_COMPONENT_DECLARE(NameContext);
+
+void flecs_name_setup_system(ecs_iter_t *it) {
+  // it->world
+}
+
+void render2d_name_setup_system(ecs_iter_t *it) {
+
+}
+
+void flecs_name_cleanup_system(ecs_world_t *world){
+
+}
+
+void flecs_name_cleanup_event_system(ecs_iter_t *it) {
+
+  //call finish clean up module here
+  module_break_name(it, "name_module");
+}
+
+void name_register_components(ecs_world_t *world){
+  ECS_COMPONENT_DEFINE(world, NameContext);
+}
+
+//set up module
+void name_register_systems(ecs_world_t *world){
+
+  //set up variable for module
+  ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { 
+      .name = "flecs_name_setup_system", 
+      .add = ecs_ids(ecs_dependson(GlobalPhases.OnSetupModulePhase)) 
+    }),
+    .callback = flecs_name_setup_system
+  });
+
+  //2d render
+  ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { 
+        .name = "render2d_name_setup_system", 
+        .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) 
+    }),
+    .callback = render2d_name_setup_system
+  });
+
+  //trigger clean up when app close which all for this event.
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = CleanUpModule }},
+    .events = { CleanUpEvent },
+    .callback = flecs_name_cleanup_event_system
+  });
+}
+
+//init name module
+void flecs_name_module_init(ecs_world_t *world){
+  //register structs
+  name_register_components(world);
+  // setup plugin name for later clean up
+  add_module_name(world, "name_module");
+  //register system
+  name_register_systems(world);
+}
+
+
+```
 
 # References:
  * 

@@ -133,11 +133,14 @@ project/
     - [x] movement
     - [ ] health 
     - [ ] damage
-- [ ] dev console
+- [ ] dev console (dk_console github)
     - [x] echo text
     - [x] " ` " < (backtick) or " ~ " < (tilde) = key toggle show dev console.
     - [x] default key for Arrow up and down scroll from dk_console. Arrow Down key is up scroll. Arrow Up key is down scroll.
-- [ ] physics ?
+    - [x] default mouse scroll up and down for scroll text logs.
+- [ ] physics
+    - [ ] simple physics 3d
+    - [ ] ?
 
 
 ## CMakeLists.txt

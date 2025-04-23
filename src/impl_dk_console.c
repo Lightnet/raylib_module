@@ -1,9 +1,0 @@
-// once?
-
-#define DK_CONSOLE_IMPLEMENTATION
-#include "dk_console.h"
-#undef DK_CONSOLE_IMPLEMENTATION
-
-#define DK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
-#include "dk_command.h"
-#undef DK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
