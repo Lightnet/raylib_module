@@ -135,7 +135,7 @@ project/
     - [ ] damage
 - [ ] dev console
     - [x] echo text
-    - [x] " ` " or " ~ " = backtick or tilde key show toggle dev console
+    - [x] " ` " < (backtick) or " ~ " < (tilde) = key toggle show dev console.
 - [ ] physics ?
 
 

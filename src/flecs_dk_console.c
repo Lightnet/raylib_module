@@ -109,13 +109,13 @@ void CustomLog(int msgType, const char* text, va_list args){
   struct tm* tm_info = localtime(&now);
 
   strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
-  vsprintf(buffer, text, args);
-  // vsprintf_s(buffer, sizeof(buffer), text, args);
+  // vsprintf(buffer, text, args);
+  vsprintf_s(buffer, sizeof(buffer), text, args);
 
   char* finalBuffer = (char*)malloc(1024);
   memset(finalBuffer, 0, 1024);
-  sprintf(finalBuffer, "%s %s", timeStr, buffer);
-  // sprintf_s(finalBuffer, sizeof(finalBuffer), "%s %s", timeStr, buffer);
+  // sprintf(finalBuffer, "%s %s", timeStr, buffer);
+  sprintf_s(finalBuffer, 1024, "%s %s", timeStr, buffer);
 
   const char* msgTypeStr = "Unknown";
   switch (msgType) {
@@ -138,8 +138,8 @@ void CustomLog(int msgType, const char* text, va_list args){
 
   char* finalBuffer2 = (char*)malloc(1024);
   memset(finalBuffer2, 0, 1024);
-  sprintf(finalBuffer2, "%s %s", msgTypeStr, finalBuffer);
-  // sprintf_s(finalBuffer2, sizeof(finalBuffer2), "%s %s", msgTypeStr, finalBuffer);
+  // sprintf(finalBuffer2, "%s %s", msgTypeStr, finalBuffer);
+  sprintf_s(finalBuffer2, 1024, "%s %s", msgTypeStr, finalBuffer);
 
   free(finalBuffer);
 
@@ -275,14 +275,10 @@ void render2d_dk_console_system(ecs_iter_t *it){
   const char *text = "Press TAB to toggle the console";
   Vector2 position = { 20.0f, 20.0f };
   DrawTextEx(*dc_ctx->imui.font, text, position, 20.0f, 1.0f, GRAY);
-  // DrawTextEx(dc_ctx->font, text, position, 20.0f, 1.0f, GRAY);//working
-  // dc_ctx->imui.font = &dc_ctx->font;
   
   // Update console (pass the stored ImUI and console)
   DK_ConsoleUpdate(dc_ctx->console, &dc_ctx->imui, console_handler);
 
-  // DrawTextEx(*imui.font, text, position, 20.0f, 1.0f, GRAY);
-  // DK_ConsoleUpdate(console_global_ptr, &imui, console_handler);
 }
 
 void dk_console_register_components(ecs_world_t *world){
@@ -292,12 +288,41 @@ void dk_console_register_components(ecs_world_t *world){
 
 void flecs_dk_console_cleanup_system(ecs_iter_t *it) {
   DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
-  if (dc_ctx && dc_ctx->isLoaded) {
-    UnloadFont(dc_ctx->font);
-    DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE);
-    dc_ctx->isLoaded = false;
-  }
+  // ecs_print(1,"flecs_dk_console_cleanup_system");
+  // if (dc_ctx && dc_ctx->isLoaded) {
+    // DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE);
+    // UnloadFont(*dc_ctx->imui.font);
+    // dc_ctx->isLoaded = false;
+  // }
 }
+
+void flecs_dk_console_cleanup_event_system(ecs_iter_t *it) {
+  ecs_print(1,"flecs_dk_console_cleanup_event_system");
+  // flecs_dk_console_cleanup_system(it);
+  DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  if(!dc_ctx) return;
+  dc_ctx->isLoaded = false;
+  // DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE); // not working?
+
+  ecs_print(1,"log zsize: %d", LOG_SIZE);
+  ecs_print(1,"log_index zsize: %d", dc_ctx->console->log_index);
+
+  // DK_ConsoleShutdown(console_global_ptr, LOG_SIZE); //
+  UnloadFont(*dc_ctx->imui.font);
+
+  module_break_name(it, "dk_console_module");
+
+}
+
+// void flecs_dk_console_close_event_system(ecs_iter_t *it) {
+//   ecs_print(1,"flecs_dk_console_close_event_system");
+//   // flecs_dk_console_cleanup_system(it);
+//   DKConsoleContext *dc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+//   if(!dc_ctx) return;
+//   dc_ctx->isLoaded = false;
+//   // DK_ConsoleShutdown(dc_ctx->console, LOG_SIZE); // not working?
+//   // UnloadFont(*dc_ctx->imui.font);
+// }
 
 void dk_console_register_systems(ecs_world_t *world){
 
@@ -317,21 +342,27 @@ void dk_console_register_systems(ecs_world_t *world){
     .callback = render2d_dk_console_system
   });
 
-  // ecs_system_init(world, &(ecs_system_desc_t){
-  //   .entity = ecs_entity(world, { 
-  //     .name = "flecs_dk_console_cleanup_system", 
-  //     .add = ecs_ids(ecs_dependson(EcsOnDelete)) 
-  //   }),
-  //   .callback = flecs_dk_console_cleanup_system
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = CleanUpModule }},
+    .events = { CleanUpEvent },
+    .callback = flecs_dk_console_cleanup_event_system
+  });
+
+  // ecs_observer(world, {
+  //   // Not interested in any specific component
+  //   .query.terms = {{ EcsAny, .src.id = CloseModule }},
+  //   .events = { CloseEvent },
+  //   .callback = flecs_dk_console_close_event_system
   // });
 
 }
 
-
-
 void flecs_dk_console_module_init(ecs_world_t *world){
 
   dk_console_register_components(world);
+
+  add_module_name(world, "dk_console_module");
 
   dk_console_register_systems(world);
 

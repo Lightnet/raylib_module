@@ -420,7 +420,6 @@ int main() {
     .callback = rl_hud_render2d_system
   });
 
-
   while (!isRunning) {
     RayLibContext *rl_ctx = ecs_singleton_ensure(world, RayLibContext);
     if(!rl_ctx) return;
@@ -429,7 +428,6 @@ int main() {
     ecs_progress(world, dt);
     isRunning = rl_ctx->shouldQuit;
   }
-
 
   printf("clean up\n");
   // clean up

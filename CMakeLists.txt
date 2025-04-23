@@ -265,7 +265,7 @@ if(NOT EXISTS ${LUAJIT_DLL_DEST})
 endif()
 
 set(FLECS_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/flecs.dll")
-message(STATUS "FLECS_DLL_DEST >>> ${FLECS_DLL_DEST}")
+# message(STATUS "FLECS_DLL_DEST >>> ${FLECS_DLL_DEST}")
 if(NOT EXISTS ${FLECS_DLL_DEST})
   message(STATUS "NOT FOUND FLECS>>>>>>>>")
   add_custom_command(TARGET ${app_lua} POST_BUILD
@@ -300,7 +300,8 @@ add_executable(main_flecs_module
 )
 
 target_compile_definitions(main_flecs_module PUBLIC
-# -DENET_IMPLEMENTATION
+  # -DENET_IMPLEMENTATION
+  -D_CRT_SECURE_NO_WARNINGS
   -DRAYGUI_IMPLEMENTATION
 )
 

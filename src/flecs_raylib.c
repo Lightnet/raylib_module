@@ -332,7 +332,6 @@ void rl_close_event_system(ecs_iter_t *it){
   ecs_print(1,"[module raylib] close_event_system");
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
   if(!rl_ctx) return;
-  //rl_ctx->isShutDown = true;
   rl_ctx->shouldQuit = true;
   // close
   // CloseWindow(); // does not work

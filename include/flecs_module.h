@@ -11,6 +11,12 @@ typedef struct {
 ECS_COMPONENT_DECLARE(PluginModule);
 
 typedef struct {
+  bool isCleanUpModule;
+  int moduleCount;
+} ModuleContext;
+ECS_COMPONENT_DECLARE(ModuleContext);
+
+typedef struct {
 ecs_entity_t OnSetUpPhase;
 ecs_entity_t OnSetupGraphicPhase;
 ecs_entity_t OnSetupModulePhase;
@@ -45,5 +51,7 @@ ecs_entity_t Widget;
 
 // init module
 void flecs_module_init(ecs_world_t *world);
+void module_break_name(ecs_iter_t *it, const char *module_name);
+ecs_entity_t add_module_name(ecs_world_t *world, const char *name);
 
 #endif

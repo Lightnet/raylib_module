@@ -217,9 +217,29 @@
   }
 
   void DK_ConsoleShutdown(Console* console, int log_size) {
+    if (console == NULL) {
+        fprintf(stderr, "DK_ConsoleShutdown: Console is NULL\n");
+        return;
+    }
+    if (console->logs == NULL) {
+        fprintf(stderr, "DK_ConsoleShutdown: Console logs is NULL\n");
+        return;
+    }
+    if (log_size <= 0) {
+        fprintf(stderr, "DK_ConsoleShutdown: Invalid log_size %d\n", log_size);
+        return;
+    }
+
     for (int i = 0; i < log_size; i++) {
-      free(console->logs[i].text);
+        if (console->logs[i].text != NULL) {
+            free(console->logs[i].text);
+            console->logs[i].text = NULL; // Prevent double-free
+        }
     }
     free(console->logs);
+    console->logs = NULL; // Prevent reuse of freed memory
+    console->log_index = 0;
+    console->scroll = 0;
+    console->is_open = false;
   }
 
