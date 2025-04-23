@@ -19,6 +19,75 @@ static Console console = { .toggle_key = KEY_GRAVE };
 static Console* console_global_ptr = NULL;
 static ecs_world_t *c_world; // access to this file only
 
+// Function to check if a string represents a float (contains a decimal point)
+int is_float(const char* str) {
+  return strchr(str, '.') != NULL;
+}
+
+// Helper function to parse input and convert to Vector3
+bool parse_to_vector3(const char* argv, Vector3* result) {
+  // Create a copy of the input string
+  char* input = strdup(argv);
+  if (!input) {
+      printf("Error: Failed to allocate memory for input string.\n");
+      return false;
+  }
+
+  // Array to store values
+  float values[3] = {0};
+  int is_float_arg[3] = {0};
+  int arg_count = 0;
+
+  // Tokenize the string
+  char* token = strtok(input, " ");
+  while (token != NULL && arg_count < 3) {
+      if (is_float(token)) {
+          values[arg_count] = atof(token);
+          is_float_arg[arg_count] = 1;
+      } else {
+          // Verify the token is a valid integer
+          char* endptr;
+          long val = strtol(token, &endptr, 10);
+          if (*endptr != '\0') {
+              printf("Error: Invalid number '%s' at argument %d.\n", token, arg_count + 1);
+              free(input);
+              return false;
+          }
+          values[arg_count] = (float)val;
+          is_float_arg[arg_count] = 0;
+      }
+      arg_count++;
+      token = strtok(NULL, " ");
+  }
+
+  // Check if correct number of arguments
+  if (arg_count != 3) {
+      printf("Error: Expected 3 arguments, got %d.\n", arg_count);
+      free(input);
+      return false;
+  }
+
+  // Ensure no extra tokens
+  token = strtok(NULL, " ");
+  if (token != NULL) {
+      printf("Error: Too many arguments.\n");
+      free(input);
+      return false;
+  }
+
+  // Convert to Vector3
+  *result = (Vector3){ values[0], values[1], values[2] };
+
+  // Print parsed values and their types for debugging
+  printf("Parsed Vector3: x=%.2f (%s), y=%.2f (%s), z=%.2f (%s)\n",
+         values[0], is_float_arg[0] ? "float" : "int",
+         values[1], is_float_arg[1] ? "float" : "int",
+         values[2], is_float_arg[2] ? "float" : "int");
+
+  free(input);
+  return true;
+}
+
 void CustomLog(int msgType, const char* text, va_list args);
 
 typedef struct {
@@ -215,8 +284,17 @@ void feco(const char* argv){
 }
 
 void setpos(const char* argv){
+  ecs_print(1,"args %s", argv);
+
   if(c_world){
-    
+    Vector3 position;
+    if (parse_to_vector3(argv, &position)) {
+      // Use the Vector3 (e.g., set camera position or object position)
+      printf("Setting position to Vector3: { %.2f, %.2f, %.2f }\n",
+        position.x, position.y, position.z);
+    }else {
+      printf("Failed to parse input to Vector3.\n");
+    }
   }
   CustomLog(LOG_INFO, argv, NULL);
 }
@@ -245,7 +323,6 @@ void reset(const char* argv){
   }
   CustomLog(LOG_INFO, argv, NULL);
 }
-
 
 void console_handler(const char* command){
 
@@ -281,6 +358,7 @@ void flecs_dk_console_setup_system(ecs_iter_t *it) {
   DK_ExtCommandPush("help", 1, "Shows the available commands and/or specific one `help <command_name>`", &help);
 
   DK_ExtCommandPush("reset", 1, "flecs reset position player node", &reset);
+  DK_ExtCommandPush("pos", 1, "flecs set position player node", &setpos);
 
   console_global_ptr = &console;
   DK_ConsoleInit(console_global_ptr, LOG_SIZE);
