@@ -107,12 +107,10 @@ void flecs_cleanup_checks_system(ecs_iter_t *it){
     }
   }
 
-  //
-  ecs_print(1," COUNT: %d Len:%d ", count, s_it.count);
+  //ecs_print(1," COUNT: %d Len:%d ", count, s_it.count);
   if((count == s_it.count && g_module->isCleanUpModule == false) ){
     g_module->isCleanUpModule = true;
-    ecs_print(1,"CLOSE......");
-    ecs_print(1,"CLOSE......");
+    ecs_print(1,"ALL MODULES DONE! CLOSE APP!");
     ecs_emit(it->world, &(ecs_event_desc_t) {
       .event = CleanUpGraphicEvent,
       .entity = CleanUpGraphic

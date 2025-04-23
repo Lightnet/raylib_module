@@ -349,6 +349,11 @@ add_custom_command(TARGET main_flecs_module POST_BUILD
     COMMENT "Copying assets directory to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/resources"
 )
 
+set(DK_CONSOLE_SRC 
+  src/dk_ui.c
+  src/dk_console.c
+)
+
 # set(BUILD_ALL_EXAMPLES OFF CACHE BOOL "Build all examples")
 # #set(BUILD_ALL_EXAMPLES OFF)
 set(BUILD_ALL_EXAMPLES ON)
@@ -367,7 +372,8 @@ set(examples
   src/flecs_test.c
   # src/raylib_capture_input_camera.c
   examples/c/raylib/raylib_toggle_camera_mode01.c
-  # examples/c/raylib/raylib_dk_console.c
+  examples/c/raylib/raylib_dk_console.c
+  
 )
 # message(STATUS "BUILD_ALL_EXAMPLES >> ${BUILD_ALL_EXAMPLES}")
 
@@ -386,12 +392,15 @@ foreach(example_source ${examples})
             add_executable(
               ${example_name} 
               ${example_source}
+              ${DK_CONSOLE_SRC}
               # ${LUA_MODULE_SRC_FILES}
             )
 
-            # target_compile_definitions(${example_name} PUBLIC
-            #   -DENET_IMPLEMENTATION
-            # )
+            target_compile_definitions(${example_name} PUBLIC
+              # -DENET_IMPLEMENTATION
+              # -DRAYGUI_IMPLEMENTATION
+              -D_CRT_SECURE_NO_WARNINGS
+            )
             
             target_link_libraries(${example_name} PRIVATE
                 raylib

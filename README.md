@@ -136,6 +136,7 @@ project/
 - [ ] dev console
     - [x] echo text
     - [x] " ` " < (backtick) or " ~ " < (tilde) = key toggle show dev console.
+    - [x] default key for Arrow up and down scroll from dk_console. Arrow Down key is up scroll. Arrow Up key is down scroll.
 - [ ] physics ?
 
 
