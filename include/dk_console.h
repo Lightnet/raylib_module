@@ -17,7 +17,7 @@ extern "C"
 
 #if !defined(LOG_SIZE)
 // #define LOG_SIZE 1080 * 1080 // size of log buffer
-#define LOG_SIZE 20 // size of log buffer
+#define LOG_SIZE 10000 // size of log buffer test
 #endif
 
 typedef struct
