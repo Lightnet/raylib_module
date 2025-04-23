@@ -98,8 +98,14 @@ typedef struct {
 } PlayerInput_T;
 ECS_COMPONENT_DECLARE(PlayerInput_T);
 
-bool is_model_valid(ModelComponent* component);
+typedef struct {
+  int width;
+  int height;
+} Resize;
 
+ECS_COMPONENT_DECLARE(Resize);
+
+bool is_model_valid(ModelComponent* component);
 void flecs_raylib_module_init(ecs_world_t *world);
 
 #endif

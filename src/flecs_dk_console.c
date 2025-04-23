@@ -324,6 +324,20 @@ void reset(const char* argv){
   CustomLog(LOG_INFO, argv, NULL);
 }
 
+void resize(const char* argv){
+
+  if(c_world){
+    // Emit entity event.
+    ecs_emit(c_world, &(ecs_event_desc_t) {
+      .event = ecs_id(Resize),
+      .entity = Widget,
+      .param = &(Resize){100, 200}
+    });
+  }
+
+  CustomLog(LOG_INFO, argv, NULL);
+}
+
 void console_handler(const char* command){
 
   char* command_buff = (char*)malloc(strlen(command) + 1);
@@ -359,6 +373,7 @@ void flecs_dk_console_setup_system(ecs_iter_t *it) {
 
   DK_ExtCommandPush("reset", 1, "flecs reset position player node", &reset);
   DK_ExtCommandPush("pos", 1, "flecs set position player node", &setpos);
+  DK_ExtCommandPush("resize", 1, "flecs resize test", &resize);
 
   console_global_ptr = &console;
   DK_ConsoleInit(console_global_ptr, LOG_SIZE);

@@ -337,6 +337,13 @@ void rl_close_event_system(ecs_iter_t *it){
   // CloseWindow(); // does not work
 }
 
+
+void OnResize(ecs_iter_t *it) {
+  Resize *p = it->param; // Obtain event data from it->param member
+  ecs_print(1,"Resize %d x %d", p->width, p->height);
+}
+
+
 void rl_register_components(ecs_world_t *world){
 
   ECS_COMPONENT_DEFINE(world, ECS_RL_INPUT_T);
@@ -346,6 +353,8 @@ void rl_register_components(ecs_world_t *world){
   ECS_COMPONENT_DEFINE(world, PHComponent);
   ECS_COMPONENT_DEFINE(world, PlayerInput_T);
   ECS_COMPONENT_DEFINE(world, CameraContext_T);
+
+  ECS_COMPONENT_DEFINE(world, Resize);
 
 }
 
@@ -363,6 +372,14 @@ void rl_register_systems(ecs_world_t *world){
     .query.terms = {{ EcsAny, .src.id = CloseModule }},
     .events = { CloseEvent },
     .callback = rl_close_event_system
+  });
+
+  // Create an entity observer
+  ecs_observer(world, {
+    // Not interested in any specific component
+    .query.terms = {{ EcsAny, .src.id = Widget }},
+    .events = { ecs_id(Resize) },
+    .callback = OnResize
   });
 
   ecs_system_init(world, &(ecs_system_desc_t){
