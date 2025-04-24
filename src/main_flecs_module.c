@@ -132,7 +132,7 @@ void setup_world_scene(ecs_iter_t *it){
   // ecs_entity_t node2 = ecs_new(it->world);
   // ecs_set_name(it->world, node2, "NodeChild");
   ecs_entity_t node2 = ecs_entity(it->world, {
-    .name = "NodeChild",
+    .name = "Camera3DNode",
     // .parent = cube
   });
   ecs_set(it->world, node2, Transform3D, {
@@ -192,7 +192,7 @@ void user_input_system(ecs_iter_t *it){
 
   Transform3D *t = ecs_field(it, Transform3D, 0);
   // float dt = GetFrameTime(); it->delta_time;
-  float dt = it->delta_time;
+  // float dt = it->delta_time;
 
   Vector2 mouseDelta = GetMouseDelta();  // Mouse movement [input]
   pi_ctx->yaw -= mouseDelta.x * pi_ctx->mouseSensitivity;
@@ -215,7 +215,6 @@ void user_input_system(ecs_iter_t *it){
         //ecs_print(1,"Cube");
         bool wasModified = false;
         
-
         // Compute forward vector for camera direction
         // Vector3 forward = {
         //   cosf(pi_ctx->yaw) * cosf(pi_ctx->pitch),
@@ -272,22 +271,19 @@ void user_input_system(ecs_iter_t *it){
           // printf("Marked %s as dirty\n", name);
         }
 
-      } else if (strcmp(name, "NodeChild") == 0) {//camera {0,1,0}
-        // t[i] = setTransform3DPos(t[i], t[i].position);
-        //rl_ctx->camera
-        Vector3 vecPos =  MatrixGetPosition(t[i].worldMatrix);
-        //Vector3 Vector3Lerp(Vector3 v1, Vector3 v2, float amount);
-        rl_ctx->camera.position = Vector3Lerp(rl_ctx->camera.position, vecPos, 0.55f);//smooth camera
-        // rl_ctx->camera.position = (Vector3){ vecPos.x, vecPos.y, vecPos.z };
-        //rl_ctx->camera.target = (Vector3){vecPos.x, vecPos.y, vecPos.z - 1.0f};
-        //rl_ctx->camera.target = NULL;
-      }else if (strcmp(name, "Floor") == 0) {
+      } 
+      //else if (strcmp(name, "NodeChild") == 0) {//camera {0,1,0}
+        // Vector3 vecPos =  MatrixGetPosition(t[i].worldMatrix);
+        // rl_ctx->camera.position = Vector3Lerp(rl_ctx->camera.position, vecPos, 0.55f);//smooth camera
+      //} 
+      else if (strcmp(name, "Floor") == 0) {
         // t[i] = setTransform3DPos(t[i], t[i].position);
       }
     }
   }
 }
 
+// input mouse capture screen
 void user_capture_input_system(ecs_iter_t *it){
   RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
   if(!rl_ctx) return;
@@ -335,6 +331,100 @@ void user_capture_input_system(ecs_iter_t *it){
     ShowCursor();
     pi_ctx->isCaptureMouse = false;
   }
+
+  // if(c_ctx->currentMode != F_CAMERA_FREE) return;
+
+  // if (pi_ctx->isCaptureMouse){
+
+  //   Vector2 mouseDelta = GetMouseDelta();  // Mouse movement [input]
+  //   pi_ctx->yaw -= mouseDelta.x * pi_ctx->mouseSensitivity;
+  //   pi_ctx->pitch -= mouseDelta.y * pi_ctx->mouseSensitivity;
+  //   pi_ctx->pitch = Clamp(pi_ctx->pitch, -PI/2.0f + 0.1f, PI/2.0f - 0.1f);  // Limit pitch [raymath]
+
+  //   // Update camera target based on yaw and pitch [raymath]
+  //   rl_ctx->camera.target = Vector3Add(rl_ctx->camera.position, (Vector3){
+  //     cosf(pi_ctx->pitch) * sinf(pi_ctx->yaw),
+  //     sinf(pi_ctx->pitch),
+  //     cosf(pi_ctx->pitch) * cosf(pi_ctx->yaw)
+  //   });
+  // }
+
+  // // Camera movement based on direction [input, raymath]
+  // Vector3 forward = Vector3Normalize(Vector3Subtract(rl_ctx->camera.target, rl_ctx->camera.position));  // Forward vector [raymath]
+  // Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, rl_ctx->camera.up));  // Right vector [raymath]
+  // Vector3 up = rl_ctx->camera.up;  // Global up vector (0, 1, 0) [raymath]
+
+  // //ecs_print(1,"delta_time ");
+  // // ecs_print(1,"delta %d", it->delta_time);
+
+  // float dt = GetFrameTime();
+  // float moveTime = pi_ctx->moveSpeed * dt;
+
+  // // Forward/Backward (W/S)
+  // if (IsKeyDown(KEY_W))  // Move forward [input]
+  //   rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(forward, moveTime));  // [raymath]
+  // if (IsKeyDown(KEY_S))  // Move backward [input]
+  //   rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(forward, -moveTime)); // [raymath]
+
+  // // Left/Right (A/D)
+  // if (IsKeyDown(KEY_A))  // Move left [input]
+  //   rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(right, -moveTime));  // [raymath]
+  // if (IsKeyDown(KEY_D))  // Move right [input]
+  //   rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(right, moveTime));   // [raymath]
+
+  // // Up/Down (Space/Shift)
+  // if (IsKeyDown(KEY_SPACE))  // Move up [input]
+  //   rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(up, moveTime));      // [raymath]
+  // if (IsKeyDown(KEY_LEFT_SHIFT))  // Move down [input]
+  //   rl_ctx->camera.position = Vector3Add(rl_ctx->camera.position, Vector3Scale(up, -moveTime));     // [raymath]
+
+  // // Update camera target after movement
+  // rl_ctx->camera.target = Vector3Add(rl_ctx->camera.position, forward);
+
+}
+
+void camera_first_person_mode_input_system(ecs_iter_t *it){
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if(!rl_ctx) return;
+
+  PlayerInput_T *pi_ctx = ecs_singleton_ensure(it->world, PlayerInput_T);
+  if (!pi_ctx) return;
+
+  CameraContext_T *c_ctx = ecs_singleton_ensure(it->world, CameraContext_T);
+  if(!c_ctx) return;
+
+  DKConsoleContext *dkc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  if(!dkc_ctx || !dkc_ctx->console || dkc_ctx->console->is_open==true) return;
+
+  if(c_ctx->currentMode != F_CAMERA_PLAYER) return;
+
+  Transform3D *t = ecs_field(it, Transform3D, 0);
+
+  for (int i = 0; i < it->count; i++) {
+    const char *name = ecs_get_name(it->world, it->entities[i]);
+    if (strcmp(name, "Camera3DNode") == 0) {
+      Vector3 vecPos =  MatrixGetPosition(t[i].worldMatrix);
+      rl_ctx->camera.position = Vector3Lerp(rl_ctx->camera.position, vecPos, 0.55f);//smooth camera
+    }
+
+  }
+
+}
+
+//camera3d free mode
+void camera_free_mode_input_system(ecs_iter_t *it){
+
+  DKConsoleContext *dkc_ctx = ecs_singleton_ensure(it->world, DKConsoleContext);
+  if(!dkc_ctx || !dkc_ctx->console || dkc_ctx->console->is_open==true) return;
+
+  RayLibContext *rl_ctx = ecs_singleton_ensure(it->world, RayLibContext);
+  if(!rl_ctx) return;
+
+  PlayerInput_T *pi_ctx = ecs_singleton_ensure(it->world, PlayerInput_T);
+  if (!pi_ctx) return;
+
+  CameraContext_T *c_ctx = ecs_singleton_ensure(it->world, CameraContext_T);
+  if(!c_ctx) return;
 
   if(c_ctx->currentMode != F_CAMERA_FREE) return;
 
@@ -384,7 +474,6 @@ void user_capture_input_system(ecs_iter_t *it){
 
   // Update camera target after movement
   rl_ctx->camera.target = Vector3Add(rl_ctx->camera.position, forward);
-
 }
 
 void rl_hud_render2d_system(ecs_iter_t *it){
@@ -467,12 +556,30 @@ int main() {
   });
 
   ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { .name = "camera_free_mode_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
+    .query.terms = {
+      { .id = ecs_id(Transform3D), .src.id = EcsSelf },
+    },
+    .callback = camera_free_mode_input_system
+  });
+
+  ecs_system_init(world, &(ecs_system_desc_t){
+    .entity = ecs_entity(world, { .name = "camera_first_person_mode_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
+    .query.terms = {
+      { .id = ecs_id(Transform3D), .src.id = EcsSelf },
+    },
+    .callback = camera_first_person_mode_input_system
+  });
+
+
+  ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { .name = "user_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
     .query.terms = {
       { .id = ecs_id(Transform3D), .src.id = EcsSelf },
     },
     .callback = user_input_system
   });
+
 
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { .name = "rl_hud_render2d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
