@@ -88,6 +88,73 @@ bool parse_to_vector3(const char* argv, Vector3* result) {
   return true;
 }
 
+
+//resize for 2 int args.
+// Helper function to parse input and convert to two integers
+bool parse_to_ints(const char* argv, int* width, int* height) {
+  // Create a copy of the input string
+  char* input = strdup(argv);
+  if (!input) {
+      printf("Error: Failed to allocate memory for input string.\n");
+      return false;
+  }
+
+  // Array to store values and track types (0 for int, 1 for float)
+  float values[2] = {0};
+  int is_float_arg[2] = {0};
+  int arg_count = 0;
+
+  // Tokenize the string
+  char* token = strtok(input, " ");
+  while (token != NULL && arg_count < 2) {
+      if (is_float(token)) {
+          values[arg_count] = atof(token);
+          is_float_arg[arg_count] = 1;
+      } else {
+          // Verify the token is a valid integer
+          char* endptr;
+          long val = strtol(token, &endptr, 10);
+          if (*endptr != '\0') {
+              printf("Error: Invalid number '%s' at argument %d.\n", token, arg_count + 1);
+              free(input);
+              return false;
+          }
+          values[arg_count] = (float)val;
+          is_float_arg[arg_count] = 0;
+      }
+      arg_count++;
+      token = strtok(NULL, " ");
+  }
+
+  // Check if correct number of arguments
+  if (arg_count != 2) {
+      printf("Error: Expected 2 arguments, got %d.\n", arg_count);
+      free(input);
+      return false;
+  }
+
+  // Ensure no extra tokens
+  token = strtok(NULL, " ");
+  if (token != NULL) {
+      printf("Error: Too many arguments.\n");
+      free(input);
+      return false;
+  }
+
+  // Convert to integers (truncate floats)
+  *width = (int)values[0];
+  *height = (int)values[1];
+
+  // Print parsed values and their types for debugging
+  printf("Parsed resize: width=%.2f (%s) -> %d, height=%.2f (%s) -> %d\n",
+         values[0], is_float_arg[0] ? "float" : "int", *width,
+         values[1], is_float_arg[1] ? "float" : "int", *height);
+
+  free(input);
+  return true;
+}
+
+
 void CustomLog(int msgType, const char* text, va_list args);
 
 typedef struct {
@@ -327,12 +394,28 @@ void reset(const char* argv){
 void resize(const char* argv){
 
   if(c_world){
+    int width, height;
+    if (parse_to_ints(argv, &width, &height)) {
+      // Validate reasonable window size (e.g., positive values)
+      if (width <= 0 || height <= 0) {
+          printf("Error: Width and height must be positive (got %d, %d).\n", width, height);
+          return;
+      }
+
+      // Resize the Raylib window
+      //SetWindowSize(width, height);
+      printf("Resized window to: %d x %d\n", width, height);
+    } else {
+        printf("Failed to parse input for resize.\n");
+    }
+
+
     // Emit entity event.
-    ecs_emit(c_world, &(ecs_event_desc_t) {
-      .event = ecs_id(Resize),
-      .entity = Widget,
-      .param = &(Resize){100, 200}
-    });
+    // ecs_emit(c_world, &(ecs_event_desc_t) {
+    //   .event = ecs_id(Resize),
+    //   .entity = Widget,
+    //   .param = &(Resize){100, 200}
+    // });
   }
 
   CustomLog(LOG_INFO, argv, NULL);

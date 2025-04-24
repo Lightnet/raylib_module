@@ -10,10 +10,8 @@
 // #include "raylib.h"
 // #include "raymath.h" // For quaternion and matrix operations
 // #include "rlgl.h"    // For rlPushMatrix, rlTranslatef, etc.
-//#include "flecs.h"
+// #include "flecs.h"
 
-// #define DK_CONSOLE_IMPLEMENTATION
-// #define DK_CONSOLE_EXT_COMMAND_IMPLEMENTATION
 #include "flecs_module.h"
 #include "flecs_raylib.h"
 #include "flecs_raygui.h"
@@ -126,7 +124,6 @@ void setup_world_scene(ecs_iter_t *it){
     .model=cubeModel,
     .isLoaded=true
   });
-
 
   // child
   // ecs_entity_t node2 = ecs_new(it->world);
@@ -541,7 +538,7 @@ int main() {
   flecs_raylib_module_init(world);
   flecs_raygui_module_init(world);
   flecs_dk_console_module_init(world);
-
+  // set up entity
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { 
         .name = "setup_world_scene", 
@@ -549,12 +546,12 @@ int main() {
     }),
     .callback = setup_world_scene
   });
-
+  // input capture and release mouse
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { .name = "user_capture_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
     .callback = user_capture_input_system
   });
-
+  // camera 3d freee mode
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { .name = "camera_free_mode_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
     .query.terms = {
@@ -562,7 +559,7 @@ int main() {
     },
     .callback = camera_free_mode_input_system
   });
-
+  // camera3d first person mode
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { .name = "camera_first_person_mode_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
     .query.terms = {
@@ -570,8 +567,7 @@ int main() {
     },
     .callback = camera_first_person_mode_input_system
   });
-
-
+  // player input keys
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { .name = "user_input_system", .add = ecs_ids(ecs_dependson(GlobalPhases.LogicUpdatePhase)) }),
     .query.terms = {
@@ -579,8 +575,7 @@ int main() {
     },
     .callback = user_input_system
   });
-
-
+  // draw 2d
   ecs_system_init(world, &(ecs_system_desc_t){
     .entity = ecs_entity(world, { .name = "rl_hud_render2d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
     .query.terms = {

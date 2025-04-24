@@ -262,7 +262,7 @@ endif()
 set(FLECS_DLL_DEST "${CMAKE_BINARY_DIR}/Debug/flecs.dll")
 # message(STATUS "FLECS_DLL_DEST >>> ${FLECS_DLL_DEST}")
 if(NOT EXISTS ${FLECS_DLL_DEST})
-  message(STATUS "NOT FOUND FLECS>>>>>>>>")
+  # message(STATUS "NOT FOUND FLECS>>>>>>>>")
   add_custom_command(TARGET ${app_lua} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           "${FLECS_DLL}"

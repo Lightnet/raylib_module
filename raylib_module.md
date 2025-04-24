@@ -103,11 +103,11 @@ ECS_COMPONENT_DECLARE(Transform3D);
 ```c
 // Create two entities with a parent/child name
 ecs_entity_t parent = ecs_entity(world, {
-  .name = "Parent"
+  .name = "PlayerNode"
 });
  
 ecs_entity_t child = ecs_entity(world, {
-  .name = "Child"
+  .name = "Camera3DChild"
 });
  
 // Create the hierarchy
@@ -124,13 +124,13 @@ ecs_remove_pair(world, child, EcsChildOf, parent);
 
 ## Method 2
 ```c
-  ecs_entity_t cube = ecs_entity(it->world, {
-    .name = "Cube"
+  ecs_entity_t node01 = ecs_entity(it->world, {
+    .name = "PlayerNode"
   });
 
   ecs_entity_t node2 = ecs_entity(it->world, {
-    .name = "NodeChild",
-    .parent = cube // parent
+    .name = "Camera3DChild",
+    .parent = node01 // parent
   });
 ```
 
@@ -259,6 +259,27 @@ ecs_emit(world, &(ecs_event_desc_t) {
 });
 ```
 
+# Transform 3D:
+
+```c
+ecs_system_init(world, &(ecs_system_desc_t){
+  .entity = ecs_entity(world, { .name = "rl_render3d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
+  .query.terms = {
+      { ecs_id(Transform3D)  }//,
+  },
+  .callback = rl_render3d_system
+});
+```
+
+```c
+ecs_system_init(world, &(ecs_system_desc_t){
+  .entity = ecs_entity(world, { .name = "rl_render3d_system", .add = ecs_ids(ecs_dependson(GlobalPhases.Render2D1Phase)) }),
+  .query.terms = {
+      { .id = ecs_id(Transform3D), .src.id = EcsSelf }
+  },
+  .callback = rl_render3d_system
+});
+```
 
 
 # References:
