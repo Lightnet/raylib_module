@@ -48,11 +48,38 @@ typedef struct {
   Model model;
 } ModelComponent;
 ECS_COMPONENT_DECLARE(ModelComponent);
+// testing
+enum FSHAPE {
+  FNONE,
+  FCUBE,
+  FSHPERE,
+  FMESH,
+  FTERRAIN
+};
+
+typedef struct {
+  bool isLoaded;
+  enum FSHAPE shapeType;
+  void* context;
+} ShapeComponent;
+ECS_COMPONENT_DECLARE(ShapeComponent);
+
+typedef struct {
+  Vector3 size;
+} CubeComponent;
+ECS_COMPONENT_DECLARE(CubeComponent);
+
+typedef struct {
+  float radius;
+} SphereComponent;
+ECS_COMPONENT_DECLARE(SphereComponent);
+
 // test
 typedef struct {
   Model* model;
 } PHComponent;
 ECS_COMPONENT_DECLARE(PHComponent);
+
 // test
 Model g_model;
 

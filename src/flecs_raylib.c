@@ -353,6 +353,10 @@ void rl_register_components(ecs_world_t *world){
   ECS_COMPONENT_DEFINE(world, CameraContext_T);
 
   ECS_COMPONENT_DEFINE(world, Resize);
+  
+  ECS_COMPONENT_DEFINE(world, ShapeComponent);
+  ECS_COMPONENT_DEFINE(world, CubeComponent);
+  ECS_COMPONENT_DEFINE(world, SphereComponent);
 
 }
 // register systems

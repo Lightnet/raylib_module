@@ -21,6 +21,7 @@
     "dk_console.h": "c",
     "ctype.h": "c",
     "assert.h": "c",
-    "type_traits": "c"
+    "type_traits": "c",
+    "windows.h": "c"
   }
 }

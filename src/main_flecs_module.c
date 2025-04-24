@@ -169,6 +169,28 @@ void setup_world_scene(ecs_iter_t *it){
   //   .isLoaded=true
   // });
 
+
+  ecs_entity_t node3 = ecs_entity(it->world, {
+    .name = "Block",
+  });
+  ecs_set(it->world, node3, Transform3D, {
+      .position = (Vector3){0.0f, 0.0f, 5.0f},
+      .rotation = QuaternionIdentity(),
+      .scale = (Vector3){1.0f, 1.0f, 1.0f},
+      .localMatrix = MatrixIdentity(),
+      .worldMatrix = MatrixIdentity(),
+      .isDirty = true
+  });
+  // ecs_add_pair(it->world, node2, EcsChildOf, cube);
+
+  Model cubeModel04 = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+  ecs_set(it->world, node3, ModelComponent, {
+    .model=cubeModel04,
+    .isLoaded=true
+  });
+
+  ecs_set(it->world, node3, CubeComponent, {0});
+
   rl_ctx->isLoaded=true;
 }
 
@@ -205,78 +227,120 @@ void user_input_system(ecs_iter_t *it){
 
   //ecs_print(1,"dt %.8f", dt);
   bool isFound = false;
+  int player_idx;
   for (int i = 0; i < it->count; i++) {
     const char *name = ecs_get_name(it->world, it->entities[i]);
     if (name) {
       if (strcmp(name, "PlayerNode") == 0) {// parent for moving the player node
         //ecs_print(1,"Cube");
         bool wasModified = false;
-        
-        // Compute forward vector for camera direction
-        // Vector3 forward = {
-        //   cosf(pi_ctx->yaw) * cosf(pi_ctx->pitch),
-        //   sinf(pi_ctx->pitch),
-        //   sinf(pi_ctx->yaw) * cosf(pi_ctx->pitch)
-        // };
-
-        // Vector3 forward = {
-        //   -sinf(pi_ctx->yaw),              // X: Left/right (negative sin for Raylib’s +X right)
-        //   0,                       // Y: Grounded (as you set)
-        //   -cosf(pi_ctx->yaw)               // Z: Forward/backward (negative cos for -Z forward)
-        // };
-
-        Vector3 forward = {
-          sinf(pi_ctx->yaw),              // X: Left/right (negative sin for Raylib’s +X right)
-          0,                       // Y: Grounded (as you set)
-          cosf(pi_ctx->yaw)               // Z: Forward/backward (negative cos for -Z forward)
-        };
-        
-        float dt = GetFrameTime();
-        float moveTime = pi_ctx->moveSpeed * dt;
-
-        forward = Vector3Normalize(forward); // Ensure unit length
-        forward.y = 0;//ground for now.
-        Vector3 right = Vector3CrossProduct(forward, rl_ctx->camera.up);
-        
-        if (IsKeyDown(KEY_W)){
-          // ecs_print(1,"forward");
-          t[i].position = Vector3Add(t[i].position, Vector3Scale(forward, moveTime));
-          t[i].isDirty = true;
-        }
-        if (IsKeyDown(KEY_S)) {
-          t[i].position = Vector3Subtract(t[i].position, Vector3Scale(forward, moveTime));
-          t[i].isDirty = true;
-        }
-        if (IsKeyDown(KEY_A)) {
-          t[i].position = Vector3Subtract(t[i].position, Vector3Scale(right, moveTime));
-          t[i].isDirty = true;
-        }
-        if (IsKeyDown(KEY_D)) {
-          t[i].position = Vector3Add(t[i].position, Vector3Scale(right, moveTime));
-          t[i].isDirty = true;
-        }
-
-        if (IsKeyPressed(KEY_R)) {
-          t[i].position = (Vector3){0.0f, 0.0f, 0.0f};
-          t[i].rotation = QuaternionIdentity();
-          t[i].scale = (Vector3){1.0f, 1.0f, 1.0f};
-          wasModified = true;
-        }
-        if (wasModified) {
-          //update matrix 3d
-          t[i].isDirty = true;
-          // printf("Marked %s as dirty\n", name);
-        }
-
+        isFound = true;
+        player_idx = i;
+        break;
       } 
-      //else if (strcmp(name, "NodeChild") == 0) {//camera {0,1,0}
-        // Vector3 vecPos =  MatrixGetPosition(t[i].worldMatrix);
-        // rl_ctx->camera.position = Vector3Lerp(rl_ctx->camera.position, vecPos, 0.55f);//smooth camera
-      //} 
-      else if (strcmp(name, "Floor") == 0) {
-        // t[i] = setTransform3DPos(t[i], t[i].position);
-      }
     }
+  }
+
+  if(isFound){
+    //const char *name = ecs_get_name(it->world, it->entities[player_idx]);
+    //t[player_idx]
+    bool wasModified = false;
+
+    Vector3 forward = {
+      sinf(pi_ctx->yaw),              // X: Left/right (negative sin for Raylib’s +X right)
+      0,                              // Y: Grounded (as you set)
+      cosf(pi_ctx->yaw)               // Z: Forward/backward (negative cos for -Z forward)
+    };
+
+    float dt = GetFrameTime();
+    float moveTime = pi_ctx->moveSpeed * dt;
+
+    forward = Vector3Normalize(forward); // Ensure unit length
+    forward.y = 0;//ground for now.
+    Vector3 right = Vector3CrossProduct(forward, rl_ctx->camera.up);
+    Vector3 originPos = t[player_idx].position;
+
+    if (IsKeyDown(KEY_W)){
+      // ecs_print(1,"forward");
+      t[player_idx].position = Vector3Add(t[player_idx].position, Vector3Scale(forward, moveTime));
+      t[player_idx].isDirty = true;
+    }
+    if (IsKeyDown(KEY_S)) {
+      t[player_idx].position = Vector3Subtract(t[player_idx].position, Vector3Scale(forward, moveTime));
+      t[player_idx].isDirty = true;
+    }
+    if (IsKeyDown(KEY_A)) {
+      t[player_idx].position = Vector3Subtract(t[player_idx].position, Vector3Scale(right, moveTime));
+      t[player_idx].isDirty = true;
+    }
+    if (IsKeyDown(KEY_D)) {
+      t[player_idx].position = Vector3Add(t[player_idx].position, Vector3Scale(right, moveTime));
+      t[player_idx].isDirty = true;
+    }
+    if (IsKeyPressed(KEY_R)) {
+      t[player_idx].position = (Vector3){0.0f, 0.0f, 0.0f};
+      t[player_idx].rotation = QuaternionIdentity();
+      t[player_idx].scale = (Vector3){1.0f, 1.0f, 1.0f};
+      wasModified = true;
+    }
+    if (wasModified) {
+      //update matrix 3d
+      t[player_idx].isDirty = true;
+      // printf("Marked %s as dirty\n", name);
+    }
+
+    ecs_query_t *q = ecs_query(it->world, {
+      .terms = {
+        { .id = ecs_id(Transform3D) },
+        { .id = ecs_id(CubeComponent) },
+      }
+    });
+
+    ecs_iter_t s_it = ecs_query_iter(it->world, q);
+
+    Vector3 playerPosition = t[player_idx].position;
+    Vector3 playerSize = {1, 1, 1};
+
+    while (ecs_query_next(&s_it)) {
+      //ecs_print(1,"blocks %d", s_it.count);
+      Transform3D *t_3d = ecs_field(&s_it, Transform3D, 0);
+      CubeComponent *s_com = ecs_field(&s_it, CubeComponent, 1);
+      Vector3 b_pos = MatrixGetPosition(t_3d->worldMatrix);
+      // ecs_print(1,"x:%0.2f, y:%0.2f, z:%0.2f", b_pos.x,b_pos.y,b_pos.z);
+
+      Vector3 enemyBoxPos = b_pos;
+      Vector3 enemyBoxSize = { 1.0f, 1.0f, 1.0f };
+
+      BoundingBox box1 = {
+        (Vector3){playerPosition.x - playerSize.x/2,
+                  playerPosition.y - playerSize.y/2,
+                  playerPosition.z - playerSize.z/2},
+        (Vector3){playerPosition.x + playerSize.x/2,
+                  playerPosition.y + playerSize.y/2,
+                  playerPosition.z + playerSize.z/2}
+      };
+      BoundingBox box2 = {
+        (Vector3){enemyBoxPos.x - enemyBoxSize.x/2,
+                  enemyBoxPos.y - enemyBoxSize.y/2,
+                  enemyBoxPos.z - enemyBoxSize.z/2},
+        (Vector3){enemyBoxPos.x + enemyBoxSize.x/2,
+                  enemyBoxPos.y + enemyBoxSize.y/2,
+                  enemyBoxPos.z + enemyBoxSize.z/2}
+      };
+      if(CheckCollisionBoxes(box1, box2)){
+        ecs_print(1,"COLLISION!");
+        t[player_idx].position = originPos;
+      }
+
+
+      // bool CheckCollisionBoxes(BoundingBox box1, BoundingBox box2);
+
+    }
+
+
+
+
+
   }
 }
 

@@ -403,13 +403,11 @@ void resize(const char* argv){
       }
 
       // Resize the Raylib window
-      //SetWindowSize(width, height);
+      // SetWindowSize(width, height); //works
       printf("Resized window to: %d x %d\n", width, height);
     } else {
         printf("Failed to parse input for resize.\n");
     }
-
-
     // Emit entity event.
     // ecs_emit(c_world, &(ecs_event_desc_t) {
     //   .event = ecs_id(Resize),
